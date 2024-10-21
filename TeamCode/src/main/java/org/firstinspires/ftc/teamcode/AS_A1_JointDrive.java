@@ -162,6 +162,12 @@ public class AS_A1_JointDrive  extends OpMode {
             //intakeServo.disable();
         }
 
+        if(gamepad1.dpad_left){
+            target -= target - 5;
+        } if(gamepad1.dpad_right){
+            target += target + 5;
+        }
+
         if(gamepad1.a){ //Arm with Dashboard PID
             double output = Pid.calculate(armDeg, target); //Will be pid1 setpoint
             arm(output);
