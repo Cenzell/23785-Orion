@@ -1,30 +1,34 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Subsystems;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDFController;
-import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.util.InterpLUT;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Config
-@TeleOp(name="AS_Arm")
-public class AS_Arm extends OpMode {
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-    //HardwareMap hardwareMap;
+public class ArmSubsystem {
+
+    Telemetry telemetry;
+    HardwareMap hardwareMap;
+    Gamepad gamepad1;
+
+    public ArmSubsystem(Telemetry telemetry, HardwareMap hardwareMap, Gamepad gamepad1){
+        this.telemetry = telemetry;
+        this.hardwareMap = hardwareMap;
+        this.gamepad1 = gamepad1;
+    }
 
     InterpLUT IntP = new InterpLUT(), IntI = new InterpLUT(), IntD = new InterpLUT(), IntF = new InterpLUT();
 
     DcMotor armMotorLeft;
     DcMotor armMotorRight;
     DcMotor extenderLeft, extenderRight; //TODO Check 560 ticks per rev
-    CRServo intakeServo;
-
+    Servo intakeServo;
     //ServoEx intakeServo;
     //TODO Limit C=42/cos(x)
 
@@ -41,7 +45,6 @@ public class AS_Arm extends OpMode {
 
     double TICKS_PER_DEGREE = 360.0/8192.0;
 
-    @Override
     public void init() {
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -52,7 +55,7 @@ public class AS_Arm extends OpMode {
         extenderLeft = hardwareMap.get(DcMotor.class, "ExtenderLeft");
         extenderRight = hardwareMap.get(DcMotor.class, "ExtenderRight");
 
-        intakeServo = hardwareMap.get(CRServo.class, "IS");
+        intakeServo = hardwareMap.get(Servo.class, "IntakeServo");
 
         //TODO - Not sure which one needs to be reversed.
         //extenderLeft.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -88,12 +91,11 @@ public class AS_Arm extends OpMode {
         Pid = new PIDFController(0,0,0,0);
     }
 
-    @Override
     public void loop() {
         FtcDashboard.getInstance().updateConfig();
 
-        double armPos = -armMotorRight.getCurrentPosition();
-        double armDeg = ((-armMotorRight.getCurrentPosition() * TICKS_PER_DEGREE) % 360);
+        double armPos = -armMotorLeft.getCurrentPosition();
+        double armDeg = ((-armMotorLeft.getCurrentPosition() * TICKS_PER_DEGREE) % 360);
 
 //        Pid.setPIDF(
 //                IntP.get(armDeg),
@@ -106,11 +108,11 @@ public class AS_Arm extends OpMode {
         //TODO Add extension and get a extension PID - Kinda my whole idea behind using interpolation.
 
         if(gamepad1.left_bumper){
-            intakeServo.setPower(-1);
+            intakeServo.setPosition(-1);
         } else if (gamepad1.right_bumper) {
-            intakeServo.setPower(1);
+            intakeServo.setPosition(1);
         } else {
-            intakeServo.setPower(0);
+            intakeServo.setPosition(0);
             //intakeServo.disable();
         }
 
@@ -168,4 +170,5 @@ public class AS_Arm extends OpMode {
         armMotorLeft.setPower(-power);
         armMotorRight.setPower(power);
     }
+
 }

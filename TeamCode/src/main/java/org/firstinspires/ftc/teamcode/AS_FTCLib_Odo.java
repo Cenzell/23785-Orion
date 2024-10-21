@@ -34,10 +34,10 @@ public class AS_FTCLib_Odo extends OpMode {
     @Override
     public void init() {
 
-        frontLeft = new MotorEx(hardwareMap, "FrontLeftDrive");
-        frontRight = new MotorEx(hardwareMap, "FrontRightDrive");
-        backLeft = new MotorEx(hardwareMap, "BackLeftDrive");
-        backRight = new MotorEx(hardwareMap, "BackRightDrive");
+        frontLeft = new MotorEx(hardwareMap, "FrontLeft");
+        frontRight = new MotorEx(hardwareMap, "FrontRight");
+        backLeft = new MotorEx(hardwareMap, "BackLeft");
+        backRight = new MotorEx(hardwareMap, "BackRight");
 
         encoderLeft = frontLeft.encoder.setDistancePerPulse(TICKS_TO_INCHES);
         encoderRight = frontRight.encoder.setDistancePerPulse(TICKS_TO_INCHES);
@@ -49,6 +49,8 @@ public class AS_FTCLib_Odo extends OpMode {
                 encoderAux::getDistance,
                 TRACKWIDTH, CENTER_WHEEL_OFFSET
         );
+
+        mecanum = new MecanumDrive(frontLeft, frontRight, backLeft, backRight);
 
         odometry = new OdometrySubsystem(holomonic);
 
@@ -70,6 +72,7 @@ public class AS_FTCLib_Odo extends OpMode {
     public void loop() {
         holomonic.updatePose();
         mecanum.driveFieldCentric(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x, odometry.getPose().getHeading());
+        //mecanum.driveFieldCentric(0.0, -0.0, 0.0, 0.0);
         if(gamepad1.a){
             holomonic.rotatePose(0);
         }
