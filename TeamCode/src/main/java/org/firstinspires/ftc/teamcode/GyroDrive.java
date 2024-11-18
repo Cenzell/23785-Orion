@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@TeleOp(name="GyroDrive")
+//@TeleOp(name="GyroDrive")
 public class GyroDrive extends OpMode {
 
     public DcMotor frontLeft, frontRight, backLeft, backRight;

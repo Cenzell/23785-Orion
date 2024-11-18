@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.teamcode.pedroPathing.localization.Encoder;
 
 @Config //Dash
-@TeleOp(name="OdoDrive")
+//@TeleOp(name="OdoDrive")
 public class OdoDrive extends OpMode {
     private DcMotor frontLeft;
     private DcMotor backLeft;
