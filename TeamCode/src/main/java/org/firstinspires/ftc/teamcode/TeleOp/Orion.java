@@ -11,6 +11,10 @@ import org.firstinspires.ftc.teamcode.Subsystems.ArmSubsystem;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveSubsystem;
 import org.firstinspires.ftc.teamcode.Subsystems.IntakeSubsystem;
 
+//import com.outoftheboxrobotics.photoncore.Photon;
+//import com.outoftheboxrobotics.photoncore.PhotonCore;
+
+//@Photon
 @Config
 @TeleOp(name = "Orion")
 public class Orion extends OpMode {
