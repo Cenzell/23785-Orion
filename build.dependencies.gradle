@@ -17,7 +17,6 @@ dependencies {
     implementation('com.acmerobotics.dashboard:dashboard:0.4.16') {
         exclude group: 'org.firstinspires.ftc'
     }
-    //implementation 'com.github.Eeshwar-Krishman:PhotonFTC:v3.0.3-APLHA'
 
 }
 
