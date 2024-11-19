@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
 
 
 @Config
-@Autonomous (name = "two-speci-park-reid", group = "Orion")
+@Autonomous (name = "reid", group = "Orion")
 public class two_specimen_reid extends OpMode {
     private Telemetry telemetryA;
 
@@ -48,56 +48,24 @@ public class two_specimen_reid extends OpMode {
                 .addPath(
                         // Line 1
                         new BezierLine(
-                                new Point(10.000, 85.000, Point.CARTESIAN),
-                                new Point(40.000, 70.000, Point.CARTESIAN)
+                                new Point(10.000, 60.000, Point.CARTESIAN),
+                                new Point(30.000, 120.000, Point.CARTESIAN)
                         )
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
                 .addPath(
                         // Line 2
                         new BezierLine(
-                                new Point(40.000, 70.000, Point.CARTESIAN),
-                                new Point(14.000, 35.000, Point.CARTESIAN)
+                                new Point(30.000, 120.000, Point.CARTESIAN),
+                                new Point(30.000, 120.000, Point.CARTESIAN)
                         )
                 )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
-                .addPath(
-                        // Line 3
-                        new BezierLine(
-                                new Point(14.000, 35.000, Point.CARTESIAN),
-                                new Point(14.000, 35.000, Point.CARTESIAN)
-                        )
-                )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(180))
-                .addPath(
-                        // Line 4
-                        new BezierLine(
-                                new Point(14.000, 35.000, Point.CARTESIAN),
-                                new Point(14.000, 35.000, Point.CARTESIAN)
-                        )
-                )
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(0))
-                .addPath(
-                        // Line 5
-                        new BezierLine(
-                                new Point(14.000, 35.000, Point.CARTESIAN),
-                                new Point(40.000, 70.000, Point.CARTESIAN)
-                        )
-                )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
-                .addPath(
-                        // Line 6
-                        new BezierLine(
-                                new Point(40.000, 70.000, Point.CARTESIAN),
-                                new Point(10.000, 25.000, Point.CARTESIAN)
-                        )
-                )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0));
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(180));
 
 
 
 
-        follower.setPose(new Pose(10.000, 85.000));
+        follower.setPose(new Pose(10.000, 60.000));
 
 
         follower.followPath(builder.build());
