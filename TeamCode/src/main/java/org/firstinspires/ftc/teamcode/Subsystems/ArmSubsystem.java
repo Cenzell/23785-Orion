@@ -43,7 +43,7 @@ public class ArmSubsystem {
     double TICKS_PER_DEGREE = 360.0/8192.0;
     public GamepadEx gamepad1ex;
 
-    /*TODO*/public static double EXTENDER_TICKS = (10.0 / 257.5)/3;//4.5/26; // We want inches per tick. So we will use the motors to extend the arm out 10 inches and then do: 10 / however many ticks we get.
+    /*TODO*/public static double EXTENDER_TICKS = (10.0 / 760);//4.5/26; // We want inches per tick. So we will use the motors to extend the arm out 10 inches and then do: 10 / however many ticks we get.
     double extenderPositionTicks = 0;
     public static PIDController extenderPID = new PIDController(0,0,0);
     double extenderInches = 0;
@@ -128,6 +128,12 @@ public class ArmSubsystem {
         double armPos = -armMotorRight.getCurrentPosition();
         double armDeg = ((-armMotorRight.getCurrentPosition() * TICKS_PER_DEGREE) % 360);
 
+        if(gamepad2.x){
+            target = target - 1;
+        } if(gamepad2.b){
+            target = target + 1;
+        }
+
         //Get the average ticks - Should help balance off inaccuracy.
         extenderPositionTicks = -(extenderLeft.getCurrentPosition() - extenderRight.getCurrentPosition()) / 2.0;
         extenderInches = 16 + extenderPositionTicks * EXTENDER_TICKS;
@@ -171,11 +177,15 @@ public class ArmSubsystem {
 //            extender(0);
 //        }
 
-        if(gamepad2.b){
-            target = 75;
-        }
-        if(gamepad2.x){
-            extenderTarget = 52;
+//        if(gamepad2.b){
+//            target = 75;
+//        }
+//        if(gamepad2.x){
+//            extenderTarget = 52;
+//        }
+
+        if(gamepad2.back){
+
         }
 
         if(gamepad2.dpad_right && target >= 118){
@@ -205,6 +215,10 @@ public class ArmSubsystem {
 //            }} else {
 //            extender(0);
 //        }
+
+        if(target >= 120){
+            target = 115;
+        }
 
         //TODO Test
         Pid.setPIDF(
