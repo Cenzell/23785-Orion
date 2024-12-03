@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.AUTO;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.util.InterpLUT;
@@ -12,13 +10,12 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.pedroPathing.follower.Follower;
-import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierCurve;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierLine;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.PathBuilder;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
+import org.firstinspires.ftc.teamcode.lib.pedroPathing.follower.Follower;
+import org.firstinspires.ftc.teamcode.lib.pedroPathing.localization.Pose;
+import org.firstinspires.ftc.teamcode.lib.pedroPathing.pathGeneration.BezierCurve;
+import org.firstinspires.ftc.teamcode.lib.pedroPathing.pathGeneration.BezierLine;
+import org.firstinspires.ftc.teamcode.lib.pedroPathing.pathGeneration.PathBuilder;
+import org.firstinspires.ftc.teamcode.lib.pedroPathing.pathGeneration.Point;
 
 @Config
 @Autonomous (name = "A-Speci-Park", group = "Orion")

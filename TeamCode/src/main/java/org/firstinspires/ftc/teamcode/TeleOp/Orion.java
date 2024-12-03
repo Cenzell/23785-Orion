@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.DriveSubsystem;
 import org.firstinspires.ftc.teamcode.Subsystems.IntakeSubsystem;
 
 @Config
-@TeleOp(name = "Orion")
+@TeleOp(name = "OrionA")
 public class Orion extends OpMode {
 
     ArmSubsystem armSubsystem;
