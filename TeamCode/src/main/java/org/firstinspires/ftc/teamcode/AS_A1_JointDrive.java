@@ -153,28 +153,19 @@ public class AS_A1_JointDrive  extends OpMode {
 
         //TODO Add extension and get a extension PID - Kinda my whole idea behind using interpolation.
 
-        if(gamepad2.y){
+        if(gamepad1.left_bumper){
             intakeServo.setPower(-1);
-        } else if (gamepad2.a) {
+        } else if (gamepad1.right_bumper) {
             intakeServo.setPower(1);
         } else {
             intakeServo.setPower(0);
             //intakeServo.disable();
         }
 
-        if(gamepad2.dpad_left){
+        if(gamepad1.dpad_left){
             target = target - 1.8;
-        } if(gamepad2.dpad_right){
+        } if(gamepad1.dpad_right){
             target = target + 1.8;
-        }
-
-        if(gamepad2.a){
-            intakeServo.setPower(1);
-        } else if (gamepad2.y) {
-            intakeServo.setPower(-1);
-        } else {
-            intakeServo.setPower(0);
-            //intakeServo.disable();
         }
 
 //        if(gamepad1.a){ //Arm with Dashboard PID

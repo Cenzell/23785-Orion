@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.controller.PIDFController;
@@ -12,11 +11,11 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-@Config
-public class ArmSubsystem {
+public class ArmNeo {
 
     Telemetry telemetry;
     HardwareMap hardwareMap;
@@ -44,15 +43,16 @@ public class ArmSubsystem {
     double TICKS_PER_DEGREE = 360.0/8192.0;
     public GamepadEx gamepad1ex;
 
-    /*TODO*/public static double EXTENDER_TICKS = (10.0 / 760);//4.5/26; // We want inches per tick. So we will use the motors to extend the arm out 10 inches and then do: 10 / however many ticks we get.
+    /*TODO*/public static double EXTENDER_TICKS = (10.0 / 257.5)/3;//4.5/26; // We want inches per tick. So we will use the motors to extend the arm out 10 inches and then do: 10 / however many ticks we get.
     double extenderPositionTicks = 0;
     public static PIDController extenderPID = new PIDController(0,0,0);
     double extenderInches = 0;
     double extenderTicks = 0;
     double extensionMax = 42;
     double extenderTarget = 16;
-
-    public ArmSubsystem(Telemetry telemetry, HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2){
+    ElapsedTime timer;
+    double startTime, endTime;
+    public ArmNeo(Telemetry telemetry, HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2){
         this.telemetry = telemetry;
         this.hardwareMap = hardwareMap;
         this.gamepad1 = gamepad1;
@@ -117,8 +117,6 @@ public class ArmSubsystem {
                 IntI.get(0),
                 IntD.get(0),
                 IntF.get(0));
-
-        intakeServo = hardwareMap.get(CRServo.class, "IS");
     }
 
     public void loop() {
@@ -129,21 +127,10 @@ public class ArmSubsystem {
         double armPos = -armMotorRight.getCurrentPosition();
         double armDeg = ((-armMotorRight.getCurrentPosition() * TICKS_PER_DEGREE) % 360);
 
-        if(gamepad2.x){
-            target = target - 1;
-        } if(gamepad2.b){
-            target = target + 1;
-        }
-
         //Get the average ticks - Should help balance off inaccuracy.
         extenderPositionTicks = -(extenderLeft.getCurrentPosition() - extenderRight.getCurrentPosition()) / 2.0;
         extenderInches = 16 + extenderPositionTicks * EXTENDER_TICKS;
         extensionMax = 33;//42-21 * Math.cos(armDeg);
-
-        telemetry.addData("-33", armDeg >= -33);
-        telemetry.addData("70", armDeg <= 70);
-        telemetry.addData("< 100", armDeg < 100);
-        telemetry.addData("> 100", armDeg > 100);
 
         if ((armDeg > -33) && ((armDeg < 65))){
             extensionMax = 33;
@@ -159,43 +146,7 @@ public class ArmSubsystem {
             }
         }
 
-        if(gamepad2.a){
-            intakeServo.setPower(1);
-        } else if (gamepad2.y) {
-            intakeServo.setPower(-1);
-        } else {
-            intakeServo.setPower(0);
-            //intakeServo.disable();
-        }
-
         extender(-extenderPID.calculate(extenderInches, extenderTarget));
-
-//        if(gamepad2.dpad_up){
-//            extender(0.5);
-//        } else if (gamepad2.dpad_down && (extenderInches < extensionMax)) {
-//            extender(-1);
-//        } else {
-//            extender(0);
-//        }
-
-//        if(gamepad2.b){
-//            target = 75;
-//        }
-//        if(gamepad2.x){
-//            extenderTarget = 52;
-//        }
-
-        if(gamepad2.back){
-
-        }
-
-        if(gamepad2.dpad_right && target >= 118){
-            target = target - 1;
-        } else if(gamepad2.dpad_left){
-            target = target - 1.8;
-        } if(gamepad2.dpad_right){
-            target = target + 1.8;
-        }
 
         if(extenderTarget >= extensionMax) {
             extenderTarget = extenderTarget - 1.5;
@@ -205,20 +156,6 @@ public class ArmSubsystem {
             extenderTarget = extenderTarget + 1;
         } else if (gamepad2.left_bumper) {
             extenderTarget = extenderTarget - 1;
-        }
-
-//        if(gamepad2.a){
-//            extender(ExtenderPid.calculate(encoderInches, encoderTarget));
-//            if(gamepad2.dpad_up){
-//                extensionLength(1);
-//            } else if (gamepad2.dpad_down) {
-//                extensionLength(-1);
-//            }} else {
-//            extender(0);
-//        }
-
-        if(target >= 120){
-            target = 115;
         }
 
         //TODO Test
@@ -262,6 +199,43 @@ public class ArmSubsystem {
         }
     }
 
+    public void armInt(double startDeg, double startExt, double armPos, double ext, double time){
+        timer.reset();
+
+        InterpLUT aInt = new InterpLUT();
+        InterpLUT eInt = new InterpLUT();
+
+        aInt.add(timer.seconds(), startDeg);
+        aInt.add(timer.seconds() + time, armPos);
+
+        eInt.add(timer.seconds(), startExt);
+        eInt.add(timer.seconds() + time, ext);
+
+        while(timer.seconds() < time){
+            target = aInt.get(timer.seconds());
+            extenderTarget = eInt.get(timer.seconds());
+        }
+    }
+
+    public void armTarget(double armTarget){
+        target = armTarget;
+    }
+
+    public void lowerArm(){
+        target = target - 1.8;
+    }
+    public void raiseArm(){
+        if(gamepad2.dpad_right && target >= 118){
+            target = target - 1;
+        } else if(gamepad2.dpad_left){
+            target = target + 1.8;
+        }
+    }
+
+    public void extension(double extension){
+        extenderTarget = extension;
+    }
+
     public void extender(double power){
         extenderLeft.setPower(power);
         extenderRight.setPower(-power);
@@ -270,16 +244,5 @@ public class ArmSubsystem {
     public void arm(double power){
         armMotorLeft.setPower(-power);
         armMotorRight.setPower(power);
-    }
-
-    public double extensionLength(double control){
-        if (control > 0 && (extenderInches >= extensionMax - 1)){
-            return extenderTicks;
-        } else if (control > 0 && !(extenderInches >= extensionMax - 1)) {
-            extenderTicks += 0.1;
-        } else if (control < 0 && (extenderInches <= -2)) {
-            extenderTicks -= 0.1;
-        }
-        return extenderTicks;
     }
 }
