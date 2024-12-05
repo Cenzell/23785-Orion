@@ -5,6 +5,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -19,6 +20,8 @@ public class IntakeSubsystem{
     public RevColorSensorV3 colorSensor;
     public NormalizedRGBA colors;
     double[] rgb = new double[] {0,0,0};
+    public DigitalChannel redLed;
+    public DigitalChannel greenLed;
 
     public enum Possession {
         HAS_PIECE,
@@ -45,6 +48,8 @@ public class IntakeSubsystem{
     public void init() {
         intakeServo = hardwareMap.get(CRServo.class, "IS");
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "ColorSensor");
+        redLed = hardwareMap.get(DigitalChannel.class, "redLed");
+        greenLed = hardwareMap.get(DigitalChannel.class, "greenLed");
         colors = colorSensor.getNormalizedColors();
         updateSample();
     }
@@ -61,7 +66,14 @@ public class IntakeSubsystem{
         telemetry.addData("RGB:", rgb);
         telemetry.addData("Distance:", colorSensor.getDistance(DistanceUnit.INCH));
 
-        if(sample != Sample.NONE){gamepad2.rumble(1);}
+        if(sample != Sample.NONE){
+            gamepad2.rumble(1);
+            redLed.setState(false);
+            greenLed.setState(true);
+        } else {
+            redLed.setState(true);
+            greenLed.setState(false);
+        }
         FtcDashboard.getInstance().updateConfig();
 
     }
