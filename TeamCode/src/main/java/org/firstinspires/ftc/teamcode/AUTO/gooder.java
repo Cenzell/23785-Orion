@@ -12,14 +12,14 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.follower.Follower;
-import org.firstinspires.ftc.teamcode.pedroPathing.localization.Pose;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierCurve;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.BezierLine;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.PathBuilder;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Point;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Path;
-import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.PathChain;
+import org.firstinspires.ftc.teamcode.lib.pedroPathing.follower.Follower;
+import org.firstinspires.ftc.teamcode.lib.pedroPathing.localization.Pose;
+import org.firstinspires.ftc.teamcode.lib.pedroPathing.pathGeneration.BezierCurve;
+import org.firstinspires.ftc.teamcode.lib.pedroPathing.pathGeneration.BezierLine;
+import org.firstinspires.ftc.teamcode.lib.pedroPathing.pathGeneration.PathBuilder;
+import org.firstinspires.ftc.teamcode.lib.pedroPathing.pathGeneration.Point;
+import org.firstinspires.ftc.teamcode.lib.pedroPathing.pathGeneration.Path;
+import org.firstinspires.ftc.teamcode.lib.pedroPathing.pathGeneration.PathChain;
 
 @Config
 @Autonomous(name = "L-S-3s-P again", group = "Orion")

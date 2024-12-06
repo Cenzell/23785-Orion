@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
@@ -20,8 +21,8 @@ public class IntakeSubsystem{
     public RevColorSensorV3 colorSensor;
     public NormalizedRGBA colors;
     double[] rgb = new double[] {0,0,0};
-    public DigitalChannel redLed;
-    public DigitalChannel greenLed;
+    public LED redLed;
+    public LED greenLed;
 
     public enum Possession {
         HAS_PIECE,
@@ -48,8 +49,8 @@ public class IntakeSubsystem{
     public void init() {
         intakeServo = hardwareMap.get(CRServo.class, "IS");
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "ColorSensor");
-        redLed = hardwareMap.get(DigitalChannel.class, "redLed");
-        greenLed = hardwareMap.get(DigitalChannel.class, "greenLed");
+        redLed = hardwareMap.get(LED.class, "redLed");
+        greenLed = hardwareMap.get(LED.class, "greenLed");
         colors = colorSensor.getNormalizedColors();
         updateSample();
     }
@@ -63,16 +64,20 @@ public class IntakeSubsystem{
         telemetry.addData("SAMPLE:", sample.name());
         telemetry.addData("POSSESSION:", possession.name());
 
-        telemetry.addData("RGB:", rgb);
+        telemetry.addData("Red", colorSensor.red());
+        telemetry.addData("Green", colorSensor.green());
+        telemetry.addData("Blue", colorSensor.blue());
+        telemetry.addData("RLed", redLed.isLightOn());
+        telemetry.addData("GLed", greenLed.isLightOn());
         telemetry.addData("Distance:", colorSensor.getDistance(DistanceUnit.INCH));
 
         if(sample != Sample.NONE){
             gamepad2.rumble(1);
-            redLed.setState(false);
-            greenLed.setState(true);
+            redLed.off();
+            greenLed.on();
         } else {
-            redLed.setState(true);
-            greenLed.setState(false);
+            redLed.on();
+            greenLed.off();
         }
         FtcDashboard.getInstance().updateConfig();
 
@@ -83,13 +88,14 @@ public class IntakeSubsystem{
             possession = Possession.HAS_PIECE;
         } else{
             possession = Possession.NO_PIECE;
+            redLed.on();
         }
 
-        if(colors.red > 0.1 && (colors.blue < 0.1 || colors.green < 0.1)){
+        if((colors.red > colors.blue) && (colors.red > colors.green)){
             sample = Sample.RED;
-        } else if (colors.blue > 0.1 && (colors.red < 0.1 || colors.green < 0.1)){
+        } else if ((colors.blue > colors.red) && (colors.blue > colors.green)){
             sample = Sample.BLUE;
-        } else if (colors.blue < 0.1 && (colors.red > 0.1 || colors.green > 0.1)){
+        } else if ((colors.red > colors.blue) && (colors.green > colors.blue)){
             sample = Sample.YELLOW;
         } else{
             sample = Sample.NONE;

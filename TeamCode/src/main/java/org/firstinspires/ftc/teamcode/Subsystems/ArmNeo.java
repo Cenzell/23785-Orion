@@ -70,6 +70,8 @@ public class ArmNeo {
         extenderLeft = hardwareMap.get(DcMotor.class, "ExtenderLeft");
         extenderRight = hardwareMap.get(DcMotor.class, "ExtenderRight");
 
+        intakeServo = hardwareMap.get(CRServo.class, "IS");
+
         //TODO - Not sure which one needs to be reversed.
         extenderLeft.setDirection(DcMotor.Direction.REVERSE);
         //extenderRight.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -167,6 +169,14 @@ public class ArmNeo {
 
         double output = -Pid.calculate(armDeg, target);
         arm(output);
+
+        if(gamepad2.dpad_right && target >= 118){
+            target = target - 1;
+        } else if(gamepad2.dpad_left){
+            target = target - 1.8;
+        } if(gamepad2.dpad_right){
+            target = target + 1.8;
+        }
 
         telemetry.addData("ARMAVERAGEPOWER", (armMotorLeft.getPower() + armMotorRight.getPower()/2));
 
