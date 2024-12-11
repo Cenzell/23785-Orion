@@ -5,11 +5,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.LED;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -21,7 +19,6 @@ public class IntakeSubsystem{
     public CRServo intakeServo;
     public RevColorSensorV3 colorSensor;
     public NormalizedRGBA colors;
-    double[] rgb = new double[] {0,0,0};
     public LED redLed;
     public LED greenLed;
     ElapsedTime ledTime;
@@ -63,16 +60,9 @@ public class IntakeSubsystem{
         colors = colorSensor.getNormalizedColors();
         updateSample();
 
-        rgb = new double[]{colors.red, colors.green, colors.blue};
-
         telemetry.addData("SAMPLE:", sample.name());
         telemetry.addData("POSSESSION:", possession.name());
 
-        telemetry.addData("Red", colorSensor.red());
-        telemetry.addData("Green", colorSensor.green());
-        telemetry.addData("Blue", colorSensor.blue());
-        telemetry.addData("RLed", redLed.isLightOn());
-        telemetry.addData("GLed", greenLed.isLightOn());
         telemetry.addData("Distance:", colorSensor.getDistance(DistanceUnit.INCH));
 
         if(sample != Sample.NONE && ledTime.seconds() > 1.5){
@@ -119,5 +109,4 @@ public class IntakeSubsystem{
     public Possession hasPiece(){
         return possession;
     }
-
 }

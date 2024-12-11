@@ -24,7 +24,7 @@ import org.firstinspires.ftc.teamcode.BigArm.lib.pedroPathing.pathGeneration.Poi
  * @version 1.0, 3/12/2024
  */
 @Config
-@Autonomous (name = "Circle", group = "Autonomous Pathing Tuning")
+@Autonomous (name = "BA Circle", group = "BA Autonomous Pathing Tuning")
 public class Circle extends OpMode {
     private Telemetry telemetryA;
 

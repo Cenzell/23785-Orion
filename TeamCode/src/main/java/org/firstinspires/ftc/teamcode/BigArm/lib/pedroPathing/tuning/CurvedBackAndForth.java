@@ -26,7 +26,7 @@ import org.firstinspires.ftc.teamcode.BigArm.lib.pedroPathing.pathGeneration.Poi
  * @version 1.0, 3/13/2024
  */
 @Config
-@Autonomous (name = "Curved Back And Forth", group = "Autonomous Pathing Tuning")
+@Autonomous (name = "BA Curved Back And Forth", group = "BA Autonomous Pathing Tuning")
 public class CurvedBackAndForth extends OpMode {
     private Telemetry telemetryA;
 
