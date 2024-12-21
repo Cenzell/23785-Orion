@@ -18,6 +18,7 @@ apply from: '../build.dependencies.gradle'
 repositories {
     maven {
         url = 'https://maven.brott.dev/'
+        url = 'https://jitpack.io'
     }
 }
 
@@ -37,5 +38,5 @@ dependencies {
     implementation "com.acmerobotics.dashboard:dashboard:0.4.16"
     implementation 'org.ftclib.ftclib:core:2.1.1'
     //implementation 'com.fasterxml/jackson.core:jacson-databind:2.12.7'
-    //implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.4.21'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.4.21'
 }

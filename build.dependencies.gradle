@@ -5,6 +5,7 @@ repositories {
 }
 
 dependencies {
+    //implementation 'com.github.Eeshwar-Krishnan:PhotonFTC:v3.0.3-ALPHA'
     implementation 'org.firstinspires.ftc:Inspection:10.1.0'
     implementation 'org.firstinspires.ftc:Blocks:10.1.0'
     implementation 'org.firstinspires.ftc:RobotCore:10.1.0'
@@ -18,5 +19,6 @@ dependencies {
         exclude group: 'org.firstinspires.ftc'
     }
 
+    //implementation 'com.github.Eeshwar-Krishnan:PhotonFTC:v3.0.3-ALPHA'
 }
 
