@@ -85,11 +85,11 @@ public class DriveSubsystem {
             gyro.resetYaw();
         }
 
-        telemetry.addLine("/// Odometry ///");
+        //telemetry.addLine("/// Odometry ///");
         //telemetry.addData("Heading:", Math.toDegrees(odometry.getPose().getHeading()));
         //telemetry.addData("x", odometry.getPose().getX());
-        telemetry.addData("Heading (IMU):", gyro.getRobotYawPitchRollAngles().getYaw());
+        //telemetry.addData("Heading (IMU):", gyro.getRobotYawPitchRollAngles().getYaw());
         //telemetry.addData("Pose:", odometry.getPose().getX());
-        telemetry.update();
+        //telemetry.update();
     }
 }

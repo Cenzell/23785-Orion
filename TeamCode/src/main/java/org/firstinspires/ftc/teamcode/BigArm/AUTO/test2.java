@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.BigArm.lib.pedroPathing.pathGeneration.Pat
 import org.firstinspires.ftc.teamcode.BigArm.lib.pedroPathing.pathGeneration.Point;
 
 @Config
-@Autonomous (name = "Speci-Park", group = "Orion")
+@Autonomous (name = "Test Speci-Park", group = "Orion")
 public class test2 extends OpMode {
     private Telemetry telemetryA;
 
