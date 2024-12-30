@@ -30,10 +30,6 @@ public class DriveSubsystem{
     public static double TRACKWIDTH = 5.7;
     public static double CENTER_WHEEL_OFFSET = 4.13333;
 
-    HolonomicOdometry holomonic;
-    OdometrySubsystem odometry;
-    MecanumDrive mecanum;
-
     Telemetry telemetry;
     Gamepad gamepad1, gamepad2;
 
@@ -88,7 +84,6 @@ public class DriveSubsystem{
         telemetry.addLine("/// Odometry ///");
         //telemetry.addData("Heading:", Math.toDegrees(odometry.getPose().getHeading()));
         //telemetry.addData("x", odometry.getPose().getX());
-        telemetry.addData("Heading (IMU):", gyro.getRobotYawPitchRollAngles().getYaw());
         //telemetry.addData("Pose:", odometry.getPose().getX());
         telemetry.update();
     }

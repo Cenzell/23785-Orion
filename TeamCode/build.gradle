@@ -16,6 +16,8 @@ apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
 
 repositories {
+    mavenCentral()
+    google()
     maven {
         url = 'https://maven.brott.dev/'
         url = 'https://jitpack.io'

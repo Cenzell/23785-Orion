@@ -19,6 +19,6 @@ dependencies {
         exclude group: 'org.firstinspires.ftc'
     }
 
-    //implementation 'com.github.Eeshwar-Krishnan:PhotonFTC:v3.0.3-ALPHA'
+    //implementation 'com.github.Eeshwar-Krishnan:PhotonFTC:3.0.3-ALPHA'
 }
 

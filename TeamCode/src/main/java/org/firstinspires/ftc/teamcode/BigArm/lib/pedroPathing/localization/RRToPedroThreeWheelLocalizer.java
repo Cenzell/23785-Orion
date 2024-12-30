@@ -4,8 +4,8 @@
 //import com.acmerobotics.roadrunner.Pose2d;
 //import com.qualcomm.robotcore.hardware.HardwareMap;
 //
-//import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.MathFunctions;
-//import org.firstinspires.ftc.teamcode.pedroPathing.pathGeneration.Vector;
+//import org.firstinspires.ftc.teamcode.BirdNest.lib.tmp.pedroPathing.pathGeneration.pedroPathing.MathFunctions;
+//import org.firstinspires.ftc.teamcode.BirdNest.lib.tmp.pedroPathing.pathGeneration.pedroPathing.Vector;
 //
 //import java.util.ArrayList;
 //import java.util.List;

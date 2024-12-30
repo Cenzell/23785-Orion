@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.BirdNest.Subsystems.DriveSubsystem;
 import org.firstinspires.ftc.teamcode.BirdNest.Subsystems.MotionSubsystem;
 
-@TeleOp(name = "BirdNest", group = "Orion")
+@TeleOp(name = "BirdNest", group = "1 Orion")
 public class OrionPrometheus extends OpMode {
     DriveSubsystem driveSubsystem;
     MotionSubsystem motionSubsystem;
