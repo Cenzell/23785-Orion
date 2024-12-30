@@ -5,15 +5,14 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.follower.Follower;
-import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.localization.localizers.ThreeWheelLocalizer;
-import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.localization.Pose;
+import com.pedropathing.follower.Follower;
+import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.constants.FConstants;
+import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.constants.LConstants;
 
 @Config
 public class DriveSubsystem {
@@ -26,6 +25,11 @@ public class DriveSubsystem {
     //private ThreeWheelLocalizer localizer;
     private Telemetry telemetry;
     private Gamepad gamepad1, gamepad2;
+
+    FConstants fConstants;
+    LConstants lConstants;
+
+
 
     private Follower follower;
 
@@ -47,6 +51,9 @@ public class DriveSubsystem {
         backLeft.setInverted(true);
         backLeft.setInverted(true);
 
+        fConstants = new FConstants();
+        lConstants = new LConstants();
+
         frontLeft.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         backLeft.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
@@ -56,7 +63,7 @@ public class DriveSubsystem {
         //localizer = new ThreeWheelLocalizer(hardwareMap, new Pose(0, 0, 0));
 
         // Initialize follower
-        follower = new Follower(hardwareMap);
+        follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
         follower.startTeleopDrive();
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -71,8 +78,6 @@ public class DriveSubsystem {
     }
 
     public void loop(){
-        // Update localizer
-        //localizer.update();
 
         // Update follower with gamepad inputs
         follower.setTeleOpMovementVectors(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
@@ -86,11 +91,11 @@ public class DriveSubsystem {
         // Add telemetry
         telemetry.addLine("=== Odometry Data ===");
         //Pose currentPose = localizer.getPose();
-        //telemetry.addData("X Position", currentPose.getX());
-        //telemetry.addData("Y Position", currentPose.getY());
-        //telemetry.addData("Heading", Math.toDegrees(currentPose.getHeading()));
+        telemetry.addData("X Position", follower.getPose().getX());
+        telemetry.addData("Y Position", follower.getPose().getY());
+        telemetry.addData("Heading", Math.toDegrees(follower.getPose().getHeading()));
         //telemetry.addData("IMU Heading", gyro.getRobotYawPitchRollAngles().getYaw());
-        telemetry.update();
+        //telemetry.update();
     }
 
     //public ThreeWheelLocalizer getLocalizer() {

@@ -35,9 +35,13 @@ public class MotionSubsystem {
     private Gamepad gamepad1;
     private Gamepad gamepad2;
 
+    public double vertTicks;
+    public double vertIN;
+    public static double VertTarget = 0;
+
     // Motion Control
-    private PIDFController VertExtension;  // Vertical extension PID controller
-    private PIDFController miniArmPID;     // Mini arm PID controller
+    public static PIDFController VertExtension;  // Vertical extension PID controller
+    public static PIDFController miniArmPID;     // Mini arm PID controller
 
     // State Variables
     private Double armDeg;            // Current arm angle in degrees
@@ -50,10 +54,14 @@ public class MotionSubsystem {
     private boolean isOutTaking = false;
     private static final double TICKS_PER_DEGREE = 8192.0/360.0;  //encoder ticks per degree (needs calibration)
     private double targetAngleDegreesMiniArm = 0;
-    public double MAKP = .05;
-    public double MAKI = .05;
-    public double MAKD = .05;
-    public double MAKF = .05;
+    public static double MAKP = .020;
+    public static double MAKI = .0;
+    public static double MAKD = .001;
+    public static double MAKF = .0;
+
+    public static double VertP = 0, VertI = 0, VertD = 0, VertF = 0;
+    public static PIDFCoefficients VertPIDF;
+
 
     /**
      * Constructor for Motion Subsystem
@@ -84,14 +92,17 @@ public class MotionSubsystem {
         VertLeft = (DcMotorEx) hardwareMap.get(DcMotor.class, "VertLeft");
 
         // Initialize Controllers
-        VertExtension = new PIDFController(0,0,0,0); // TODO: Configure PIDF values
+        VertPIDF = new PIDFCoefficients(0,0,0,0);
+        VertExtension = new PIDFController(VertP, VertI, VertD, VertF); // TODO: Configure PIDF values
         miniArmPID = new PIDFController(MAKP,MAKI,MAKD,MAKF);    // TODO: Configure PIDF values
 
 
         // Initial setup
         if (gamepad1.dpad_down) {
-            MiniExt.setPosition(.60); // TODO: Address over heating issue
+            MiniExt.setPosition(.75); // TODO: Address over heating issue
         }
+
+        drivePos();
     }
 
     /**
@@ -106,6 +117,8 @@ public class MotionSubsystem {
         setMiniArmAngle();
         // update telemetry
         updateTelemetry();
+
+        updateVert();
     }
 
     /**
@@ -120,6 +133,23 @@ public class MotionSubsystem {
         if (gamepad1.x) wallPickupPrep();
         if (gamepad1.y) closeClaw();
         if (gamepad1.left_bumper) clawOpen();
+
+        if(gamepad1.dpad_down) extendArm(-1);
+        else if (gamepad1.dpad_up) extendArm(1);
+        else extendArm(0);
+    }
+
+    public void updateVert(){
+        VertExtension.setPIDF(VertP, VertI, VertD, VertF);
+
+        vertTicks = (VertLeft.getCurrentPosition() + -VertRight.getCurrentPosition())/2.0;
+        vertIN = vertTicks / 400;
+
+        if(gamepad1.dpad_left){
+            double output = VertExtension.calculate(vertIN, VertTarget);
+            extendArm(output);
+        }
+
     }
 
     /**
@@ -134,8 +164,8 @@ public class MotionSubsystem {
         if (gamepad2.left_bumper) climbPrep();
         if (gamepad2.right_bumper) climbOne();
         if (gamepad2.right_trigger > .05) climbTwo();
-        if (gamepad1.dpad_up) {targetAngleDegreesMiniArm = 90;}
-        if (gamepad1.dpad_down) {targetAngleDegreesMiniArm = 0;}
+        //if (gamepad1.dpad_up) {targetAngleDegreesMiniArm = 90;}
+        //if (gamepad1.dpad_down) {targetAngleDegreesMiniArm = 0;}
     }
 
     /**
@@ -163,8 +193,8 @@ public class MotionSubsystem {
     }
 
     public void drivePos(){
-        HoriExtL.setPosition(0);
-        HoriExtR.setPosition(0);
+        HoriExtL.setPosition(0.1);
+        HoriExtR.setPosition(0.1);
         IntakeFlip.setPosition(.25);
         Intake.setPower(0);
         //TODO set wrist position (continous servo needs to turn for quarter second or so)
@@ -257,7 +287,12 @@ public class MotionSubsystem {
         // Apply power limits
         pidOutput = Math.min(Math.max(pidOutput, -1.0), 1.0);
 
-        MiniArm.setPower(pidOutput);
+        MiniArm.setPower(-pidOutput);
+    }
+
+    private void extendArm(double x){
+        VertLeft.setPower(-x);
+        VertRight.setPower(x);
     }
 
     /**
@@ -268,6 +303,14 @@ public class MotionSubsystem {
         telemetry.addData("Left Pos", HoriExtL.getPosition());
         telemetry.addData("MiniArm", MiniArm.getCurrentPosition() / TICKS_PER_DEGREE);
         telemetry.addData("miniTarget", targetAngleDegreesMiniArm);
+        telemetry.addData("VertExtL", VertLeft.getCurrentPosition());
+        telemetry.addData("VertExtR", VertRight.getCurrentPosition());
+        telemetry.addData("VertTicks", vertTicks);
+        telemetry.addData("VertIN", vertIN);
+        telemetry.addData("VertTarget", VertTarget);
+        telemetry.addData("P", VertExtension.getP());
+        telemetry.addData("Output", VertExtension.calculate(vertIN, VertTarget));
+        telemetry.addData("Target", VertTarget);
     }
 
     public void Limits(){
