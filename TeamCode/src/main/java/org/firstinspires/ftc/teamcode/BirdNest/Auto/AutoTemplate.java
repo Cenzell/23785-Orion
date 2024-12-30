@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.constants.LConst
 
 import org.firstinspires.ftc.teamcode.BirdNest.Subsystems.MotionSubsystem;
 
-@Autonomous(name = "") //TODO: Add
+@Autonomous(name = "") //TODO: Add name here
 public class AutoTemplate extends OpMode {
     Follower follower;
     MotionSubsystem motionSubsystem;
