@@ -26,7 +26,7 @@ public class MotionSubsystem {
 
     public DcMotorEx VertRight;       // Right vertical extension motor
     public DcMotorEx MiniArm;         // Mini arm motor
-    public DcMotorEx Intake;          // Intake motor
+    public DcMotorImpl Intake;          // Intake motor
     public DcMotorEx VertLeft;        // Left vertical extension motor
 
     // Control Components
@@ -54,6 +54,7 @@ public class MotionSubsystem {
     private boolean isOutTaking = false;
     private static final double TICKS_PER_DEGREE = 8192.0/360.0;  //encoder ticks per degree (needs calibration)
     private double targetAngleDegreesMiniArm = 0;
+    private double wristTarget = 0;
     public static double MAKP = .020;
     public static double MAKI = .0;
     public static double MAKD = .001;
@@ -61,6 +62,8 @@ public class MotionSubsystem {
 
     public static double VertP = 0, VertI = 0, VertD = 0, VertF = 0;
     public static PIDFCoefficients VertPIDF;
+
+    public double WristDeg, WristTicks;
 
 
     /**
@@ -88,7 +91,7 @@ public class MotionSubsystem {
         // Initialize Motors
         VertRight = (DcMotorEx) hardwareMap.get(DcMotor.class, "VertRight");
         MiniArm = (DcMotorEx) hardwareMap.get(DcMotor.class, "MiniArm");
-        Intake = (DcMotorEx) hardwareMap.get(DcMotor.class, "Intake");
+        Intake = (DcMotorImpl) hardwareMap.get(DcMotor.class, "Intake");
         VertLeft = (DcMotorEx) hardwareMap.get(DcMotor.class, "VertLeft");
 
         // Initialize Controllers
@@ -113,12 +116,16 @@ public class MotionSubsystem {
         handleGamepad1Controls();
         // Gamepad 2 Controls
         handleGamepad2Controls();
-        //update arm angle
+        // update arm angle
         setMiniArmAngle();
+        // set wrist angle
+        setWrist();
         // update telemetry
         updateTelemetry();
-
+        // set vertical angle
         updateVert();
+
+        manageWrist();
     }
 
     /**
@@ -133,6 +140,9 @@ public class MotionSubsystem {
         if (gamepad1.x) wallPickupPrep();
         if (gamepad1.y) closeClaw();
         if (gamepad1.left_bumper) clawOpen();
+
+        if (gamepad1.dpad_left) {wristTarget = 25;}
+        if (gamepad1.dpad_right) {wristTarget = -25;}
 
         if(gamepad1.dpad_down) extendArm(-1);
         else if (gamepad1.dpad_up) extendArm(1);
@@ -152,6 +162,12 @@ public class MotionSubsystem {
 
     }
 
+    public void manageWrist(){
+        WristTicks = Intake.getCurrentPosition();
+
+        WristDeg = ((WristTicks * 360.0/8192.0)/4);
+    }
+
     /**
      * Handle Gamepad 2 controls for secondary functions
      */
@@ -164,8 +180,6 @@ public class MotionSubsystem {
         if (gamepad2.left_bumper) climbPrep();
         if (gamepad2.right_bumper) climbOne();
         if (gamepad2.right_trigger > .05) climbTwo();
-        //if (gamepad1.dpad_up) {targetAngleDegreesMiniArm = 90;}
-        //if (gamepad1.dpad_down) {targetAngleDegreesMiniArm = 0;}
     }
 
     /**
@@ -193,11 +207,11 @@ public class MotionSubsystem {
     }
 
     public void drivePos(){
-        HoriExtL.setPosition(0.1);
-        HoriExtR.setPosition(0.1);
+        HoriExtL.setPosition(0.2);
+        HoriExtR.setPosition(0.2);
         IntakeFlip.setPosition(.25);
         Intake.setPower(0);
-        //TODO set wrist position (continous servo needs to turn for quarter second or so)
+        //TODO set wrist position
         telemetry.addData("State", "drive Position");
 
     }
@@ -218,7 +232,7 @@ public class MotionSubsystem {
         clawOpen();
         MiniExt.setPosition(1);
         //TODO set mini arm to position
-        //TODO set wrist position (continous servo needs to turn for quarter second or so)
+        //TODO set wrist position
         telemetry.addData("State", "wall Pickup Prep");
     }
 
@@ -242,21 +256,21 @@ public class MotionSubsystem {
 
     public void sampleScoreLow(){
         //TODO set mini arm to position
-        //TODO set wrist position (continous servo needs to turn for quarter second or so)
+        //TODO set wrist position
         //Todo set vertical extension
         telemetry.addData("State", "scoreSampleLow");
     }
 
     public void sampleScoreHigh(){
         //TODO set mini arm to position
-        //TODO set wrist position (continous servo needs to turn for quarter second or so)
+        //TODO set wrist position
         //Todo set vertical extension
         telemetry.addData("State", "scoreSampleHigh");
     }
 
     public void specimenPrep(){
         //TODO set mini arm to position
-        //TODO set wrist position (continous servo needs to turn for quarter second or so)
+        //TODO set wrist position
         //Todo set vertical extension
         telemetry.addData("State", "SpecimenPrep");
     }
@@ -299,18 +313,31 @@ public class MotionSubsystem {
      * Updates telemetry data
      */
     private void updateTelemetry() {
-        telemetry.addData("Right Pos", HoriExtR.getPosition());
-        telemetry.addData("Left Pos", HoriExtL.getPosition());
-        telemetry.addData("MiniArm", MiniArm.getCurrentPosition() / TICKS_PER_DEGREE);
-        telemetry.addData("miniTarget", targetAngleDegreesMiniArm);
-        telemetry.addData("VertExtL", VertLeft.getCurrentPosition());
-        telemetry.addData("VertExtR", VertRight.getCurrentPosition());
+        //telemetry.addData("Right Pos", HoriExtR.getPosition());
+        //telemetry.addData("Left Pos", HoriExtL.getPosition());
+        //telemetry.addData("MiniArm", MiniArm.getCurrentPosition() / TICKS_PER_DEGREE);
+        //telemetry.addData("miniTarget", targetAngleDegreesMiniArm);
+        //telemetry.addData("VertExtL", VertLeft.getCurrentPosition());
+        //telemetry.addData("VertExtR", VertRight.getCurrentPosition());
         telemetry.addData("VertTicks", vertTicks);
         telemetry.addData("VertIN", vertIN);
         telemetry.addData("VertTarget", VertTarget);
         telemetry.addData("P", VertExtension.getP());
         telemetry.addData("Output", VertExtension.calculate(vertIN, VertTarget));
         telemetry.addData("Target", VertTarget);
+        telemetry.addData("WristTicks", WristTicks);
+        telemetry.addData("WristDeg", WristDeg);
+        telemetry.addData("ticks", Intake.getCurrentPosition());
+    }
+
+    public void setWrist(){
+        if(Intake.getCurrentPosition() < wristTarget){
+            //Wrist.setPosition(1);
+        } else if (Intake.getCurrentPosition() > wristTarget) {
+            //Wrist.setPosition(0);
+        }else{
+            //Wrist.setPosition(.5);
+        }
     }
 
     public void Limits(){
