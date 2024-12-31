@@ -40,7 +40,7 @@ public class MotionSubsystem {
     public static double VertTarget = 0;
 
     // Motion Control
-    public static PIDFController VertExtension;  // Vertical extension PID controller
+    public static PIDFController vertExtension;  // Vertical extension PID controller
     public static PIDFController miniArmPID;     // Mini arm PID controller
 
     // State Variables
@@ -54,7 +54,7 @@ public class MotionSubsystem {
     private boolean isOutTaking = false;
     private static final double TICKS_PER_DEGREE = 8192.0/360.0;  //encoder ticks per degree (needs calibration)
     private double targetAngleDegreesMiniArm = 0;
-    private double wristTarget = 0;
+    public static double wristTarget = 10;
     public static double MAKP = .020;
     public static double MAKI = .0;
     public static double MAKD = .001;
@@ -96,7 +96,7 @@ public class MotionSubsystem {
 
         // Initialize Controllers
         VertPIDF = new PIDFCoefficients(0,0,0,0);
-        VertExtension = new PIDFController(VertP, VertI, VertD, VertF); // TODO: Configure PIDF values
+        vertExtension = new PIDFController(VertP, VertI, VertD, VertF); // TODO: Configure PIDF values
         miniArmPID = new PIDFController(MAKP,MAKI,MAKD,MAKF);    // TODO: Configure PIDF values
 
 
@@ -150,13 +150,13 @@ public class MotionSubsystem {
     }
 
     public void updateVert(){
-        VertExtension.setPIDF(VertP, VertI, VertD, VertF);
+        vertExtension.setPIDF(VertP, VertI, VertD, VertF);
 
         vertTicks = (VertLeft.getCurrentPosition() + -VertRight.getCurrentPosition())/2.0;
         vertIN = vertTicks / 400;
 
         if(gamepad1.dpad_left){
-            double output = VertExtension.calculate(vertIN, VertTarget);
+            double output = vertExtension.calculate(vertIN, VertTarget);
             extendArm(output);
         }
 
@@ -165,7 +165,7 @@ public class MotionSubsystem {
     public void manageWrist(){
         WristTicks = Intake.getCurrentPosition();
 
-        WristDeg = ((WristTicks * 360.0/8192.0)/4);
+        WristDeg = ((WristTicks * 360.0/8192.0)/4.0);
     }
 
     /**
@@ -313,17 +313,17 @@ public class MotionSubsystem {
      * Updates telemetry data
      */
     private void updateTelemetry() {
-        //telemetry.addData("Right Pos", HoriExtR.getPosition());
-        //telemetry.addData("Left Pos", HoriExtL.getPosition());
-        //telemetry.addData("MiniArm", MiniArm.getCurrentPosition() / TICKS_PER_DEGREE);
+        telemetry.addData("Right Pos", HoriExtR.getPosition());
+        telemetry.addData("Left Pos", HoriExtL.getPosition());
+        telemetry.addData("MiniArm", MiniArm.getCurrentPosition() / TICKS_PER_DEGREE);
         //telemetry.addData("miniTarget", targetAngleDegreesMiniArm);
         //telemetry.addData("VertExtL", VertLeft.getCurrentPosition());
         //telemetry.addData("VertExtR", VertRight.getCurrentPosition());
-        telemetry.addData("VertTicks", vertTicks);
+        //telemetry.addData("VertTicks", vertTicks);
         telemetry.addData("VertIN", vertIN);
         telemetry.addData("VertTarget", VertTarget);
-        telemetry.addData("P", VertExtension.getP());
-        telemetry.addData("Output", VertExtension.calculate(vertIN, VertTarget));
+        //telemetry.addData("P", vertExtension.getP());
+        telemetry.addData("Output", vertExtension.calculate(vertIN, VertTarget));
         telemetry.addData("Target", VertTarget);
         telemetry.addData("WristTicks", WristTicks);
         telemetry.addData("WristDeg", WristDeg);
@@ -331,12 +331,15 @@ public class MotionSubsystem {
     }
 
     public void setWrist(){
-        if(Intake.getCurrentPosition() < wristTarget){
-            //Wrist.setPosition(1);
-        } else if (Intake.getCurrentPosition() > wristTarget) {
-            //Wrist.setPosition(0);
-        }else{
-            //Wrist.setPosition(.5);
+//        if(Intake.getCurrentPosition() < wristTarget){
+//            Wrist.setPosition(1);
+//        } else if (Intake.getCurrentPosition() > wristTarget) {
+//            Wrist.setPosition(0);
+//        }else{
+//            Wrist.setPosition(.5);
+//        }
+        if(gamepad1.dpad_left){
+
         }
     }
 

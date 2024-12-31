@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.tuners_tests.localization;
+package pedroPathing.tuners_tests.localization;
 
 import static com.pedropathing.follower.FollowerConstants.leftFrontMotorName;
 import static com.pedropathing.follower.FollowerConstants.leftRearMotorName;
@@ -26,7 +26,7 @@ import com.pedropathing.util.Drawing;
 import java.util.Arrays;
 import java.util.List;
 
-import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.constants.*;
+import pedroPathing.constants.*;
 
 /**
  * This is the LocalizationTest OpMode. This is basically just a simple mecanum drive attached to a

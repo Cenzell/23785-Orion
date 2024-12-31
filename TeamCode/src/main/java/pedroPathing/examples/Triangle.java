@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.tuners_tests.verification;
+package pedroPathing.examples;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -12,19 +12,19 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.constants.FConstants;
-import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.constants.LConstants;
+import pedroPathing.constants.FConstants;
+import pedroPathing.constants.LConstants;
 
 
 /**
- * This is the Circle autonomous OpMode.
+ * This is the Triangle autonomous OpMode.
  * It runs the robot in a triangle, with the starting point being the bottom-middle point.
  *
- * @author Baron Henderson
+ * @author Baron Henderson - 20077 The Indubitables
  * @author Samarth Mahapatra - 1002 CircuitRunners Robotics Surge
  * @version 1.0, 12/30/2024
  */
-@Autonomous(name = "Triangle", group = "Verification")
+@Autonomous(name = "Triangle", group = "Examples")
 public class Triangle extends OpMode {
     private Follower follower;
 

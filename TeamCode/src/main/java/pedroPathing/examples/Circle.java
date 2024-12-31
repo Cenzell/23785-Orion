@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.tuners_tests.verification;
+package pedroPathing.examples;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -11,8 +11,8 @@ import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 
-import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.constants.FConstants;
-import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.constants.LConstants;
+import pedroPathing.constants.FConstants;
+import pedroPathing.constants.LConstants;
 
 /**
  * This is the Circle autonomous OpMode. It runs the robot in a PathChain that's actually not quite
@@ -26,7 +26,7 @@ import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.constants.LConst
  * @version 1.0, 3/12/2024
  */
 @Config
-@Autonomous (name = "Circle", group = "Verification")
+@Autonomous (name = "Circle", group = "Examples")
 public class Circle extends OpMode {
     private Telemetry telemetryA;
 

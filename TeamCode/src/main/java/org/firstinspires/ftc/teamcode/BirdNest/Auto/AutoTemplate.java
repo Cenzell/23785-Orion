@@ -5,8 +5,8 @@ import com.pedropathing.localization.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.constants.FConstants;
-import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.constants.LConstants;
+import pedroPathing.constants.FConstants;
+import pedroPathing.constants.LConstants;
 
 import org.firstinspires.ftc.teamcode.BirdNest.Subsystems.MotionSubsystem;
 

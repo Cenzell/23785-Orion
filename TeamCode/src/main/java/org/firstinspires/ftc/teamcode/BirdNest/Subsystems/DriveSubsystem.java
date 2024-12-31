@@ -11,8 +11,8 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import com.pedropathing.follower.Follower;
-import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.constants.FConstants;
-import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.constants.LConstants;
+import pedroPathing.constants.FConstants;
+import pedroPathing.constants.LConstants;
 
 @Config
 public class DriveSubsystem {
@@ -89,7 +89,7 @@ public class DriveSubsystem {
         }
 
         // Add telemetry
-        telemetry.addLine("=== Odometry Data ===");
+        //telemetry.addLine("=== Odometry Data ===");
         //Pose currentPose = localizer.getPose();
         telemetry.addData("X Position", follower.getPose().getX());
         telemetry.addData("Y Position", follower.getPose().getY());
