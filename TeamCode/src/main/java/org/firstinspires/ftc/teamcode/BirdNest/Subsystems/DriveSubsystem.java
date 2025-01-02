@@ -84,7 +84,7 @@ public class DriveSubsystem {
         follower.update();
 
         if(gamepad2.b){
-            gyro.resetYaw();
+            //gyro.resetYaw();
             //localizer.setPose(new Pose(localizer.getPose().getX(), localizer.getPose().getY(), 0));
         }
 
