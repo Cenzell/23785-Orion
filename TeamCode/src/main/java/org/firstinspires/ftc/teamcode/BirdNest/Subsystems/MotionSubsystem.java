@@ -1,20 +1,11 @@
 package org.firstinspires.ftc.teamcode.BirdNest.Subsystems;
 
-import static java.lang.Math.round;
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.*;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-/**
- * Motion Subsystem for controlling robot mechanisms including:
- * - Horizontal and vertical extensions
- * - Mini arm and wrist
- * - Intake and claw systems
- * - Climbing mechanisms
- */
 @Config
 public class MotionSubsystem {
 
@@ -50,20 +41,17 @@ public class MotionSubsystem {
     private Double armDeg;            // Current arm angle in degrees
     private Double ForwardLimit;      // Forward movement limit
     private Double VertLimit;         // Vertical movement limit
-    private double distanceTime = 2000;
-    private long startTime;
-    private int clawset = 0;
     private long outTakeStartTime = 0;
     private boolean isOutTaking = false;
     private static final double TICKS_PER_DEGREE = 8192.0/360.0;  //encoder ticks per degree
-    private double targetAngleDegreesMiniArm = 0;
-    public static double wristTarget = 10;
+    private double targetAngleDegreesMiniArm;
+    public static double wristTarget;
     public static double MAKP = .020;
-    public static double MAKI = .0001;
+    public static double MAKI = .001;
     public static double MAKD = .001;
     public static double MAKF = .0001;
 
-    public static double WP = .05;
+    public static double WP = .1;
     public static double WI = .0;
     public static double WD = .0;
     public static double WF = .0;
@@ -76,7 +64,7 @@ public class MotionSubsystem {
 
     public double WristDeg, WristTicks;
 
-
+    public String state = "";
     /**
      * Constructor for Motion Subsystem
      */
@@ -106,11 +94,13 @@ public class MotionSubsystem {
         VertLeft = (DcMotorEx) hardwareMap.get(DcMotor.class, "VertLeft");
 
         // Initialize Controllers
-        VertPIDF = new PIDFCoefficients(0,0,0,0);
+        //VertPIDF = new PIDFCoefficients(0,0,0,0);
         vertExtension = new PIDFController(VertP, VertI, VertD, VertF);
+        //vertExtension.setTolerance(90);
         miniArmPID = new PIDFController(MAKP,MAKI,MAKD,MAKF);
+        miniArmPID.setTolerance(3);
         wristPID = new PIDFController(WP, WI, WD, WF);
-
+        wristPID.setTolerance(3);
         drivePos();
     }
 
@@ -144,25 +134,7 @@ public class MotionSubsystem {
         if (gamepad1.x) wallPickupPrep();
         if (gamepad1.y) closeClaw();
         if (gamepad1.left_bumper) clawOpen();
-
-        //if (gamepad1.dpad_right) {wristTarget = -25;}
-
-        //if(gamepad1.dpad_down) extendArm(-1);
-        //else if (gamepad1.dpad_up) extendArm(1);
-        //else extendArm(0);
     }
-
-    public void updateVert(){
-        vertExtension.setPIDF(VertP, VertI, VertD, VertF);
-
-        vertTicks = (VertLeft.getCurrentPosition() + -VertRight.getCurrentPosition())/2.0;
-        vertIN = vertTicks / 450;
-
-        double output = vertExtension.calculate(vertIN, VertTarget);
-        extendArm(output);
-
-    }
-
 
     /**
      * Handle Gamepad 2 controls for secondary functions
@@ -179,12 +151,12 @@ public class MotionSubsystem {
     }
 
     /**
-     * Control Functions
+     * State Functions
      */
     public void intakePrep(){
         IntakeFlip.setPosition(.8);
         Intake.setPower(1);
-        telemetry.addData("State", "Intake Position");
+        state = "Intake Position";
 
     }
 
@@ -199,7 +171,7 @@ public class MotionSubsystem {
                 isOutTaking = false;
             }
         }
-        telemetry.addData("State", "Out Taking piece");
+        state = "Out Taking Piece";
     }
 
     public void drivePos(){
@@ -208,46 +180,36 @@ public class MotionSubsystem {
         IntakeFlip.setPosition(.08);
         Intake.setPower(0);
         MiniExt.setPosition(.70);
-        targetAngleDegreesMiniArm = 20;
-        wristTarget = 40;
+        targetAngleDegreesMiniArm = 25;
+        wristTarget = 0;
         VertTarget = 0;
-        telemetry.addData("State", "drive Position");
+        state = "Drive Position";
 
     }
 
     public void intakePos(){
         HoriExtL.setPosition(.9);
         HoriExtR.setPosition(.9);
-        telemetry.addData("State", "full Intake Position");
+        state = "Full Intake Extension";
     }
 
     public void halfIntakePos(){
         HoriExtL.setPosition(.5);
         HoriExtR.setPosition(.5);
-        telemetry.addData("State", "half Intake Position");
+        state = "Half Intake Extension";
     }
 
     public void wallPickupPrep(){
         clawOpen();
         MiniExt.setPosition(1);
-        targetAngleDegreesMiniArm = 21;
-        wristTarget = -10;
-        telemetry.addData("State", "wall Pickup Prep");
-    }
-
-    public void closeClaw(){
-        Claw.setPosition(.2);
-        telemetry.addData("State", "Claw Close");
-    }
-
-    public void clawOpen(){
-        Claw.setPosition(1);
-        telemetry.addData("State", "Claw Open");
+        targetAngleDegreesMiniArm = 7;
+        wristTarget = -23;
+        state = "Wall Pickup Prep";
     }
 
     public void transfer(){
         targetAngleDegreesMiniArm = 25;
-        wristTarget = -45;
+        wristTarget = -80;
         Claw.setPosition(1);
         IntakeFlip.setPosition(.25);
         MiniExt.setPosition(0);
@@ -259,61 +221,114 @@ public class MotionSubsystem {
                 transferTimerStarted = true;
             }
 
-            if (transferTimer.seconds() >= 0.75) { // 3/4 of a second
+            if (transferTimer.seconds() >= 0.75) {
                 Claw.setPosition(0);
                 transferTimerStarted = false;
             }
         } else {
             transferTimerStarted = false;
         }
-        telemetry.addData("State", "transfer Position");
+        state = "Transfer Position";
     }
-
-
 
     public void sampleScoreLow(){
         MiniExt.setPosition(1);
         targetAngleDegreesMiniArm = 125;
-        wristTarget = 15;
+        wristTarget = 35;
         VertTarget = 5;
-        telemetry.addData("State", "scoreSampleLow");
+        state = "Score Sample Low";
     }
 
     public void sampleScoreHigh(){
         targetAngleDegreesMiniArm = 125;
-        wristTarget = 15;
+        wristTarget = 35;
         VertTarget = 17;
         MiniExt.setPosition(1);
-        telemetry.addData("State", "scoreSampleHigh");
+        state = "Score Sample High";
     }
 
     public void specimenPrep(){
         targetAngleDegreesMiniArm = 105;
         wristTarget = 100;
         VertTarget = 0;
-        MiniExt.setPosition(1);
-        telemetry.addData("State", "SpecimenPrep");
+        MiniExt.setPosition(0);
+        state = "Specimen Prep";
     }
 
     public void specimenScore(){
-        VertTarget = 12;
-        if (vertIN > 10){
+        VertTarget = 8;
+
+        if (vertIN > 5.5){
             clawOpen();
         }
-        telemetry.addData("State", "scoreSpecimen");
+        state = "Score Specimen";
     }
 
     public void climbPrep(){
         //Todo set vertical extension
+        state = "Climb Prep";
     }
 
     public void climbOne(){
         //Todo set vertical extension
         //TODO set smth with miniArm position
+        state = "Stage One Climb";
     }
 
     public void climbTwo(){
         //Todo set vertical extension
+        state = "Stage Two Climb";
+    }
+
+    /**
+     * Control Code
+     *
+     */
+    private void extendArm(double x){
+        VertLeft.setPower(-x);
+        VertRight.setPower(x);
+    }
+
+    public void closeClaw(){
+        Claw.setPosition(.2);
+        state = "Claw Closed";
+    }
+
+    public void clawOpen(){
+        Claw.setPosition(1);
+        state = "Claw Open";
+    }
+
+    /**
+     * Updates telemetry data
+     */
+    private void updateTelemetry() {
+        telemetry.addData("State", state);
+        telemetry.addData("Right Pos", HoriExtR.getPosition());
+        telemetry.addData("Left Pos", HoriExtL.getPosition());
+        telemetry.addData("MiniArm", MiniArm.getCurrentPosition() / TICKS_PER_DEGREE);
+        telemetry.addData("miniTarget", targetAngleDegreesMiniArm);
+        telemetry.addData("VertExtL", VertLeft.getCurrentPosition());
+        telemetry.addData("VertExtR", VertRight.getCurrentPosition());
+        telemetry.addData("VertIn", vertIN);
+        telemetry.addData("VertTarget", VertTarget);
+        telemetry.addData("WristDeg", Intake.getCurrentPosition() / (TICKS_PER_DEGREE * 4.0));
+        telemetry.addData("WristTarget", wristTarget);
+
+    }
+
+
+    /**
+     * PID Control code
+     */
+    public void updateVert(){
+        vertExtension.setPIDF(VertP, VertI, VertD, VertF);
+
+        vertTicks = (VertLeft.getCurrentPosition() + -VertRight.getCurrentPosition())/2.0;
+        vertIN = vertTicks / 450;
+
+        double output = vertExtension.calculate(vertIN, VertTarget);
+        extendArm(output);
     }
 
     public void setMiniArmAngle() {
@@ -326,41 +341,12 @@ public class MotionSubsystem {
         MiniArm.setPower(-pidOutput);
     }
 
-    private void extendArm(double x){
-        VertLeft.setPower(-x);
-        VertRight.setPower(x);
-    }
-
-    /**
-     * Updates telemetry data
-     */
-    private void updateTelemetry() {
-        telemetry.addData("Right Pos", HoriExtR.getPosition());
-        telemetry.addData("Left Pos", HoriExtL.getPosition());
-        telemetry.addData("MiniArm", MiniArm.getCurrentPosition() / TICKS_PER_DEGREE);
-        telemetry.addData("miniArmTicks", MiniArm.getCurrentPosition());
-        telemetry.addData("miniTarget", targetAngleDegreesMiniArm);
-        telemetry.addData("VertExtL", VertLeft.getCurrentPosition());
-        telemetry.addData("VertExtR", VertRight.getCurrentPosition());
-        telemetry.addData("VertTicks", vertTicks);
-        //telemetry.addData("VertIN", vertIN);
-        telemetry.addData("VertTarget", VertTarget);
-        //telemetry.addData("P", vertExtension.getP());
-        telemetry.addData("Output", vertExtension.calculate(vertIN, VertTarget));
-        telemetry.addData("Target", VertTarget);
-        telemetry.addData("WristTicks", WristTicks);
-        telemetry.addData("WristDeg", WristDeg);
-        telemetry.addData("WristTarget", wristTarget);
-
-    }
-
     public void setWrist(){
-        double currentPosition = Intake.getCurrentPosition() / (TICKS_PER_DEGREE * 4);
+        double currentPosition = Intake.getCurrentPosition() / (TICKS_PER_DEGREE * 4.0);
         double pidOutput = wristPID.calculate(currentPosition, wristTarget);
 
-
         // Apply power limits
-        pidOutput = ((Math.min(Math.max(pidOutput, -1.0), 1.0))/2.0) + .5;
+        pidOutput = (pidOutput/2.0) + .5;
 
         Wrist.setPosition(pidOutput);
     }
