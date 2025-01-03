@@ -25,6 +25,12 @@ public class OrionPrometheus extends OpMode {
     }
 
     @Override
+    public void start(){
+        driveSubsystem.start();
+        motionSubsystem.start();
+    }
+
+    @Override
     public void loop() {
         driveSubsystem.loop();
         motionSubsystem.loop();

@@ -18,9 +18,12 @@ public class FuckIt extends OpMode {
 
     @Override
     public void loop() {
-        leftFront.setPower(0.5);
-        rightFront.setPower(0.5);
-        leftBack.setPower(0.5);
-        rightBack.setPower(0.5);
+        if(gamepad1.a) {
+            leftFront.setPower(0.2);
+            rightFront.setPower(0.2);
+        } else if (gamepad1.b) {
+            leftBack.setPower(0.2);
+            rightBack.setPower(0.2);
+        }
     }
 }
