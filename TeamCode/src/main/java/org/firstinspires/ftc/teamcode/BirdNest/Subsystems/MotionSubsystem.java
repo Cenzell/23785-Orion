@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.BirdNest.Subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDFController;
-import com.arcrobotics.ftclib.hardware.SensorDistance;
-import com.arcrobotics.ftclib.hardware.SensorDistanceEx;
 import com.qualcomm.robotcore.hardware.*;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -11,8 +9,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 import java.util.Locale;
-
-
 
 @Config
 public class MotionSubsystem {
@@ -29,6 +25,7 @@ public class MotionSubsystem {
     public DcMotorEx MiniArm;         // Mini arm motor
     public DcMotorImpl Intake;          // Intake motor
     public DcMotorEx VertLeft;        // Left vertical extension motor
+    DigitalChannel digitalTouch;        // Hardware Device Object
 
     // Control Components
     private Telemetry telemetry;
@@ -59,16 +56,7 @@ public class MotionSubsystem {
     public static double MAKD = .001;
     public static double MAKF = .0001;
 
-    private ElapsedTime transferTimerOne = new ElapsedTime();
-    private boolean transferTimerStartedOne = false;
-    private ElapsedTime transferTimerTwo = new ElapsedTime();
-    private boolean transferTimerStartedTwo = false;
-    private ElapsedTime transferTimerThree = new ElapsedTime();
-    private boolean transferTimerStartedThree = false;
-    private ElapsedTime transferTimerFour = new ElapsedTime();
-    private boolean transferTimerStartedFour = false;
-    private ElapsedTime transferTimerFive = new ElapsedTime();
-    private boolean transferTimerStartedFive = false;
+    double vertOffest = 0;
 
 
     public static double VertP = 0.35, VertI = 0.25, VertD = 0, VertF = 0;
@@ -110,6 +98,8 @@ public class MotionSubsystem {
 
         Wrist.setDirection(Servo.Direction.REVERSE);
         //MiniExt.setDirection(Servo.Direction.REVERSE);
+
+        digitalTouch = hardwareMap.get(DigitalChannel.class, "sensor_digital");
     }
 
     public void start(){
@@ -131,18 +121,6 @@ public class MotionSubsystem {
         // update telemetry
         updateTelemetry();
 
-        if(transferTimerTwo.seconds() >= 1.75 && transferTimerOne.seconds() >= 1.75 && transferTimerThree.seconds() >= 1.75 && transferTimerFour.seconds() >= 1.75 && transferTimerFive.seconds() >= 1.75){
-            transferTimerStartedTwo = false;
-            transferTimerStartedOne = false;
-            transferTimerStartedThree = false;
-            transferTimerStartedFour = false;
-            transferTimerStartedFive = false;
-            transferTimerTwo.reset();
-            transferTimerOne.reset();
-            transferTimerThree.reset();
-            transferTimerFour.reset();
-            transferTimerFive.reset();
-        }
     }
 
     /**
@@ -181,7 +159,6 @@ public class MotionSubsystem {
         if (gamepad2.right_stick_button) MiniExt.setPosition(MiniExt.getPosition() + 0.0005);
         //if (gamepad2.left_bumper) climbPrep();
         //if (gamepad2.right_bumper) climbOne();
-        if (gamepad2.right_bumper) sensorTest();
         //if (gamepad2.right_trigger > .05) climbTwo();
     }
 
@@ -191,6 +168,7 @@ public class MotionSubsystem {
     public void intakePrep(){
         IntakeFlip.setPosition(.85);
         Intake.setPower(1);
+        clawOpen();
         state = "Intake Position";
 
     }
@@ -201,7 +179,7 @@ public class MotionSubsystem {
             outTakeStartTime = System.currentTimeMillis();
             isOutTaking = true;
         } else {
-            if (System.currentTimeMillis() - outTakeStartTime >= 250) {
+            if (System.currentTimeMillis() - outTakeStartTime >= 500) {
                 Intake.setPower(-1);
                 isOutTaking = false;
             }
@@ -222,15 +200,6 @@ public class MotionSubsystem {
 
     }
 
-    public void sensorTest() {
-        if (sensorDistance.getDistance(DistanceUnit.CM) <= 2.9) {
-            Intake.setPower(-.75);
-        }
-        if (sensorDistance.getDistance(DistanceUnit.CM) >= 3) {
-            Intake.setPower(0);
-        }
-        state = "Sensor Test";
-    }
     public void intakePos(){
         HoriExtL.setPosition(.9);
         HoriExtR.setPosition(.9);
@@ -254,19 +223,18 @@ public class MotionSubsystem {
     public void transfer() {
         HoriExtL.setPosition(0.15);
         HoriExtR.setPosition(0.15);
-        IntakeFlip.setPosition(.44);
+        IntakeFlip.setPosition(.475);
 
-        Wrist.setPosition(.47);
-        MiniExt.setPosition(.14);
+        Wrist.setPosition(.425);
+        MiniExt.setPosition(.175);
 
-        targetAngleDegreesMiniArm = 16;
-
+        targetAngleDegreesMiniArm = 15;
 
         // Continuously check distance sensor regardless of timer state
         double currentDistance = sensorDistance.getDistance(DistanceUnit.CM);
         telemetry.addData("Distance", currentDistance);
 
-        if (currentDistance >= 2.85) {
+        if (currentDistance >= 2.7) {
             Intake.setPower(0);
             closeClaw();
         } else {
@@ -276,51 +244,7 @@ public class MotionSubsystem {
         if (Claw.getPosition() < .1) {
             //VertTarget = 4.0;
             state = "Transfer Position - Vertical Extension";
-            transferTimerStartedFour = false;
-
         }
-
-        if (!transferTimerStartedOne) {
-            transferTimerOne.reset();
-            transferTimerStartedOne = true;
-
-            if (!transferTimerStartedTwo) {
-                transferTimerStartedTwo = true;
-                transferTimerTwo.reset();
-            }
-            if (!transferTimerStartedThree) {
-                transferTimerStartedThree = true;
-                transferTimerThree.reset();
-            }
-            if (!transferTimerStartedFour) {
-                transferTimerStartedFour = true;
-                transferTimerFour.reset();
-            }
-            if (!transferTimerStartedFive) {
-                transferTimerStartedFive = true;
-                transferTimerFive.reset();
-            }
-        }
-
-        /*if (transferTimerOne.seconds() >= 0.5 && !(transferTimerTwo.seconds() >= .825)) {
-            transferTimerStartedOne = false;
-            state = "Transfer Position - Transfer Started";
-        }
-
-        if (transferTimerTwo.seconds() >= .825) {
-            Wrist.setPosition(.43);
-            MiniExt.setPosition(.27);
-            targetAngleDegreesMiniArm = 17.5;
-            transferTimerStartedTwo = false;
-            state = "Transfer Position - Transfer Almost";
-        }
-
-        if (transferTimerThree.seconds() >= 1.5) {
-            Claw.setPosition(0);
-            state = "Transfer Position - Transfer Complete";
-            transferTimerStartedThree = false;
-        }
-        */
 
     }
 
@@ -430,21 +354,24 @@ public class MotionSubsystem {
      * PID Control code
      */
     public void updateVert(){
-        vertExtension.setPIDF(VertP, VertI, VertD, VertF);
+        /*
+        if (digitalTouch.getState()) {
+            vertOffest += vertIN; TODO fix this shit... always sets the thing to zero prolly cus i set it as a digiital device and not a rev touch sensor but to dumb to fix
+        }
+        */
 
         vertTicks = (VertLeft.getCurrentPosition() + -VertRight.getCurrentPosition())/2.0;
-        vertIN = vertTicks / 450;
+        vertIN = vertTicks / 450 - vertOffest;
 
         double output = vertExtension.calculate(vertIN, VertTarget);
         extendArm(output);
     }
 
     public void setMiniArmAngle() {
-        double currentPosition = MiniArm.getCurrentPosition() / TICKS_PER_DEGREE;
-        double pidOutput = miniArmPID.calculate(currentPosition, targetAngleDegreesMiniArm);
 
-        // Apply power limits
-        pidOutput = Math.min(Math.max(pidOutput, -1.0), 1.0);
+
+        double currentPosition = (MiniArm.getCurrentPosition() / TICKS_PER_DEGREE) - vertOffest;
+        double pidOutput = miniArmPID.calculate(currentPosition, targetAngleDegreesMiniArm);
 
         MiniArm.setPower(-pidOutput);
     }
