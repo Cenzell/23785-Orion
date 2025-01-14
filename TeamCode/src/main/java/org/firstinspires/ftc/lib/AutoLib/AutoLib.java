@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public abstract class AutoLib extends OpMode {
-    
+
     // Core timing and state management
     protected ElapsedTime runtime = new ElapsedTime();
     protected ElapsedTime stageTimer = new ElapsedTime();
@@ -76,7 +76,7 @@ public abstract class AutoLib extends OpMode {
             AutoStage currentStage = stages.get(currentStageIndex);
 
             // Execute current stage
-            if(!currentStage.isFailed()){
+            if (!currentStage.isFailed()) {
                 currentStage.run();
             } else {
                 currentStage.fail();
@@ -127,8 +127,8 @@ public abstract class AutoLib extends OpMode {
         private ElapsedTime timer = new ElapsedTime();
 
         public GenericState(String name, Runnable moveAction,
-                         Supplier<Boolean> completionCheck,
-                         double timeout) {
+                            Supplier<Boolean> completionCheck,
+                            double timeout) {
             this.name = name;
             this.action = moveAction;
             this.completionCheck = completionCheck;
@@ -147,7 +147,7 @@ public abstract class AutoLib extends OpMode {
 
         @Override
         public boolean isComplete() {
-            return false;
+            return completionCheck.get();
         }
 
         @Override
@@ -169,7 +169,7 @@ public abstract class AutoLib extends OpMode {
         private Supplier<Boolean> completionCheck;
         private double timeout;
         private ElapsedTime timer = new ElapsedTime();
-        private Path path;
+        private PathBuilder path;
         private Follower follower;
 
         public MoveStage(String name, Runnable moveAction,
@@ -179,21 +179,25 @@ public abstract class AutoLib extends OpMode {
             this.moveAction = moveAction;
             this.completionCheck = completionCheck;
             this.timeout = timeout;
+
+            path = new PathBuilder();
         }
 
-        public MoveStage(String name, Path path, Follower follower){
+        public MoveStage(String name, PathBuilder path, Follower follower) {
             this.name = name;
             this.path = path;
             this.follower = follower;
+
+            path = new PathBuilder();
         }
 
         @Override
         public void run() {
             moveAction.run();
-            if(moveAction != null){
+            if (moveAction != null) {
                 moveAction.run();
             } else {
-                follower.followPath(path);
+                follower.followPath(path.build());
             }
         }
 
@@ -258,4 +262,3 @@ public abstract class AutoLib extends OpMode {
         }
     }
 }
-

@@ -34,8 +34,14 @@ public class ExampleAuto extends OpMode {
                         "Move to Scoring Position",
                         () -> {
                             // Move to scoring position logic
-                            Path scoringPath = null;
-                            follower.followPath(scoringPath);
+                            PathBuilder path = new PathBuilder();
+                                path.addPath(new BezierLine(
+                                            new Point(60.000, 30.000, Point.CARTESIAN),
+                                            new Point(60.000, 25.000, Point.CARTESIAN)
+                                    ))
+                                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+                                    .build();
+                            follower.followPath(path.build());
                         },
                         () -> !follower.isBusy(),
                         3.0  // 3-second timeout

@@ -12,11 +12,9 @@ import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.BirdNest.Subsystems.DriveSubsystem;
 import org.firstinspires.ftc.teamcode.BirdNest.Subsystems.MotionSubsystem;
 
 import pedroPathing.constants.FConstants;
@@ -27,7 +25,7 @@ import java.util.List;
 
 
 
-@Autonomous(name = "CARTER-AUSTIN", group = "Examples")
+@Autonomous(name = "CARTER-AUSTIN", group = "1Examples")
 public class Auto extends OpMode {
     private Follower follower;
     private List<PathChain> paths = new ArrayList<>();
@@ -37,6 +35,9 @@ public class Auto extends OpMode {
     MotionSubsystem motionSubsystem;
     private int currentStage = 0;
     private boolean stageComplete = false;
+
+    private ElapsedTime Timer = new ElapsedTime();
+    private boolean TimerStarted = false;
 
     @Override
     public void init() {
@@ -62,16 +63,16 @@ public class Auto extends OpMode {
         paths.add(builder
                 .addPath(new BezierLine(
                         new Point(11.000, 64.000, Point.CARTESIAN),
-                        new Point(32.000, 64.000, Point.CARTESIAN)
+                        new Point(35.5000, 64.000, Point.CARTESIAN)
                 ))
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180)).setPathEndVelocityConstraint(0)
                 .build());
 
         // push prep 0
         builder = new PathBuilder();
         paths.add(builder
                 .addPath(new BezierCurve(
-                        new Point(32.000, 64.000, Point.CARTESIAN),
+                        new Point(35.500, 64.000, Point.CARTESIAN),
                         new Point(16.000, 42.000, Point.CARTESIAN),
                         new Point(60.000, 30.000, Point.CARTESIAN)
                 ))
@@ -83,7 +84,7 @@ public class Auto extends OpMode {
         paths.add(builder
                 .addPath(new BezierLine(
                         new Point(60.000, 30.000, Point.CARTESIAN),
-                        new Point(60.000, 25.000, Point.CARTESIAN)
+                        new Point(60.000, 28.000, Point.CARTESIAN)
                 ))
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
@@ -92,8 +93,8 @@ public class Auto extends OpMode {
         builder = new PathBuilder();
         paths.add(builder
                 .addPath(new BezierLine(
-                        new Point(60.000, 25.000, Point.CARTESIAN),
-                        new Point(25.000, 25.000, Point.CARTESIAN)
+                        new Point(60.000, 28.000, Point.CARTESIAN),
+                        new Point(26.000, 28.000, Point.CARTESIAN)
                 ))
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
@@ -102,7 +103,7 @@ public class Auto extends OpMode {
         builder = new PathBuilder();
         paths.add(builder
                 .addPath(new BezierLine(
-                        new Point(25.000, 25.000, Point.CARTESIAN),
+                        new Point(26.000, 25.000, Point.CARTESIAN),
                         new Point(60.000, 25.000, Point.CARTESIAN)
                 ))
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
@@ -123,7 +124,7 @@ public class Auto extends OpMode {
         paths.add(builder
                 .addPath(new BezierLine(
                         new Point(60.000, 20.000, Point.CARTESIAN),
-                        new Point(25.000, 20.000, Point.CARTESIAN)
+                        new Point(26.000, 20.000, Point.CARTESIAN)
                 ))
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
@@ -131,17 +132,18 @@ public class Auto extends OpMode {
         builder = new PathBuilder();
         paths.add(builder
                 .addPath(new BezierLine(
-                        new Point(25.000, 20.000, Point.CARTESIAN),
-                        new Point(60.000, 20.000, Point.CARTESIAN)
+                        new Point(26.000, 20.000, Point.CARTESIAN),
+                        new Point(62.000, 20.000, Point.CARTESIAN)
                 ))
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
+
         //push prep 3
         builder = new PathBuilder();
         paths.add(builder
                 .addPath(new BezierLine(
-                        new Point(60.000, 20.000, Point.CARTESIAN),
-                        new Point(60.000, 15.000, Point.CARTESIAN)
+                        new Point(62.000, 20.000, Point.CARTESIAN),
+                        new Point(62.000, 12.500, Point.CARTESIAN)
                 ))
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
@@ -149,8 +151,8 @@ public class Auto extends OpMode {
         builder = new PathBuilder();
         paths.add(builder
                 .addPath(new BezierLine(
-                        new Point(60.000, 15.000, Point.CARTESIAN),
-                        new Point(25.000, 15.000, Point.CARTESIAN)
+                        new Point(62.000, 11.000, Point.CARTESIAN),
+                        new Point(25.000, 11.000, Point.CARTESIAN)
                 ))
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
@@ -158,8 +160,8 @@ public class Auto extends OpMode {
         builder = new PathBuilder();
         paths.add(builder
                 .addPath(new BezierLine(
-                        new Point(25.000, 16.000, Point.CARTESIAN),
-                        new Point(12.000, 35.000, Point.CARTESIAN)
+                        new Point(26.000, 11.000, Point.CARTESIAN),
+                        new Point(12.000, 31.000, Point.CARTESIAN)
                 ))
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
@@ -167,7 +169,7 @@ public class Auto extends OpMode {
         builder = new PathBuilder();
         paths.add(builder
                 .addPath(new BezierCurve(
-                        new Point(12.000, 35.000, Point.CARTESIAN),
+                        new Point(12.000, 31.000, Point.CARTESIAN),
                         new Point(14.000, 62.000, Point.CARTESIAN),
                         new Point(32.000, 62.000, Point.CARTESIAN)
                 ))
@@ -217,101 +219,134 @@ public class Auto extends OpMode {
 
     private boolean isMotionComplete() {
         boolean vertComplete = motionSubsystem.vertExtension.atSetPoint();
-        boolean wristComplete = motionSubsystem.wristPID.atSetPoint();
         boolean miniArmComplete = motionSubsystem.miniArmPID.atSetPoint();
 
-        return  vertComplete && /*wristComplete &&*/ miniArmComplete;
+        return  vertComplete && miniArmComplete;
     }
 
-    private void startStageOne() {
+    private void startStageOne() { //Lineup
         motionSubsystem.specimenPrep();
         follower.followPath(paths.get(0));
+        motionSubsystem.closeClaw();
+        //motionSubsystem.setVertTarget(0.5);
         currentStage = 1;
         stageComplete = false;
+        follower.setMaxPower(0.75);
     }
 
-    private void startStageTwo() {
+    private void start101(){ //Prep 0
+        currentStage = 101;
+        stageComplete = false;
+        motionSubsystem.specimenScore();
+        follower.setMaxPower(1);
+        follower.holdPoint(new Pose(40.5000, 64.000, Math.toRadians(180)));
+    }
+
+    private void startStageTwo() { // Prep 1
+        motionSubsystem.clawOpen();
         follower.followPath(paths.get(1));
+        motionSubsystem.drivePos();
         currentStage = 2;
+        follower.setMaxPower(1);
         stageComplete = false;
     }
 
-    private void startStageThree() {
+    private void startStageThree() { // Push 1
         follower.followPath(paths.get(2));
         currentStage = 3;
         stageComplete = false;
     }
 
-    private void startStageFour() {
+    private void startStageFour() { // Return 1
         follower.followPath(paths.get(3));
         currentStage = 4;
         stageComplete = false;
     }
 
-    private void startStageFive() {
+    private void startStageFive() { // Push Prep 2
         follower.followPath(paths.get(4));
         currentStage = 5;
         stageComplete = false;
     }
 
-    private void startStageSix() {
+    private void startStageSix() { // Push 2
         follower.followPath(paths.get(5));
         currentStage = 6;
         stageComplete = false;
     }
 
-    private void startStageSeven() {
+    private void startStageSeven() { // Return 2
         follower.followPath(paths.get(6));
         currentStage = 7;
         stageComplete = false;
     }
 
-    private void startStageEight() {
+    private void startStageEight() { // Push Prep 3
         follower.followPath(paths.get(7));
         currentStage = 8;
         stageComplete = false;
     }
 
-    private void startStageNine() {
+    private void startStageNine() { // Push 3
         follower.followPath(paths.get(8));
         currentStage = 9;
         stageComplete = false;
     }
 
-    private void startStageTen() {
+    private void startStageTen() { // Speci 1
         follower.followPath(paths.get(9));
-        currentStage = 10;
+        currentStage = 102;
+        motionSubsystem.wallPickupPrep();
         stageComplete = false;
     }
 
-    private void startStageEleven() {
+    private void start102(){
+        if(!TimerStarted) {
+            Timer.reset();
+            TimerStarted = true;
+        }else if(Timer.seconds() >= 0.5){
+            currentStage = 10;
+            stageComplete = false;
+        }
+        motionSubsystem.closeClaw();
+    }
+
+    private void startStageEleven() { // Score 1
+        motionSubsystem.specimenPrep();
         follower.followPath(paths.get(10));
         currentStage = 11;
         stageComplete = false;
     }
 
-    private void startStageTwelve() {
+    private void start103(){
+        follower.holdPoint(new Pose(40.500, 62.000, Math.toRadians(180)));
+        motionSubsystem.specimenScore();
+        currentStage = 103;
+        stageComplete = false;
+    }
+
+    private void startStageTwelve() { // Speci 2
         follower.followPath(paths.get(11));
         currentStage = 12;
         stageComplete = false;
     }
-    private void startStageThirteen() {
+    private void startStageThirteen() { // Score 2
         follower.followPath(paths.get(12));
         currentStage = 13;
         stageComplete = false;
     }
 
-    private void startStageFourteen() {
+    private void startStageFourteen() { // Speci 3
         follower.followPath(paths.get(13));
         currentStage = 14;
         stageComplete = false;
     }
-    private void startStageFifteen() {
+    private void startStageFifteen() { // Score 3
         follower.followPath(paths.get(14));
         currentStage = 15;
         stageComplete = false;
     } private void startStageSixteen() {
-        follower.followPath(paths.get(15));
+        //follower.followPath(paths.get(15));
         currentStage = 16;
         stageComplete = false;
     }
@@ -325,6 +360,13 @@ public class Auto extends OpMode {
         switch (currentStage) {
             case 1:
                 if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
+                    stageComplete = true;
+                    start101();
+                }
+                break;
+
+            case 101:
+                if (isMotionComplete() && !stageComplete) {
                     stageComplete = true;
                     startStageTwo();
                 }
@@ -387,16 +429,28 @@ public class Auto extends OpMode {
             case 10:
                 if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
                     stageComplete = true;
-                    startStageEleven();
+                    start102();
                 }
                 break;
+
+            case 102:
+                if (isMotionComplete() && !stageComplete) {
+                    stageComplete = true;
+                    startStageEleven();
+                }
 
             case 11:
                 if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
                     stageComplete = true;
-                    startStageTwelve();
+                    start103();
                 }
                 break;
+
+            case 103:
+                if (isMotionComplete() && !stageComplete) {
+                    stageComplete = true;
+                    startStageTwelve();
+                }
 
             case 12:
                 if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
@@ -430,13 +484,12 @@ public class Auto extends OpMode {
         }
 
         // Debug telemetry
-        telemetryA.addData("Current Stage", currentStage);
+        /*telemetryA.addData("Current Stage", currentStage);
         telemetryA.addData("Stage Complete", stageComplete);
         telemetryA.addData("Path Complete", follower.atParametricEnd());
         telemetryA.addData("Motion Complete", isMotionComplete());
         telemetryA.addData("Vert correct", motionSubsystem.vertExtension.atSetPoint());
-        telemetryA.addData("Wrist correct", motionSubsystem.wristPID.atSetPoint());
-        telemetryA.addData("Mini Arm correct", motionSubsystem.miniArmPID.atSetPoint());
+        telemetryA.addData("Mini Arm correct", motionSubsystem.miniArmPID.atSetPoint());*/
 
         follower.telemetryDebug(telemetryA);
         telemetryA.update();
