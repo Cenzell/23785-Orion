@@ -293,9 +293,9 @@ public class BGAuto extends OpMode {
             case LINEUP:
                 if(!follower.isBusy()){
                     follower.followPath(paths[0]);}
-                motionSubsystem.specimenPrep();
+                    motionSubsystem.specimenPrep();
                 if (follower.atParametricEnd() && isMotionComplete()) {
-                    currentState = Stages.PREP_ONE;
+                    currentState = Stages.PREP_ZERO;
                 }
                 break;
             case PREP_ZERO:

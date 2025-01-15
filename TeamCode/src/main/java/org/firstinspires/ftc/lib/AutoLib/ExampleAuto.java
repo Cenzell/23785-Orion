@@ -77,5 +77,6 @@ public class ExampleAuto extends OpMode {
     @Override
     public void loop() {
         createRoutine().update();
+        telemetry.addData("State", createRoutine().getCurrentStageName());
     }
 }

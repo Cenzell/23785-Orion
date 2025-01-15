@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.BirdNest.Subsystems;
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.*;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -25,7 +24,7 @@ public class MotionSubsystem {
     public DcMotorEx MiniArm;         // Mini arm motor
     public DcMotorImpl Intake;          // Intake motor
     public DcMotorEx VertLeft;        // Left vertical extension motor
-    DigitalChannel digitalTouch;        // Hardware Device Object
+    public TouchSensor digitalTouch;
 
     // Control Components
     private Telemetry telemetry;
@@ -35,7 +34,7 @@ public class MotionSubsystem {
 
     public double vertTicks;
     public double vertIN;
-    public static double VertTarget = 0;
+    public static double VertTarget = 0.75;
 
     // Motion Control
     public static PIDFController vertExtension;  // Vertical extension PID controller
@@ -49,9 +48,9 @@ public class MotionSubsystem {
     private long outTakeStartTime = 0;
     private boolean isOutTaking = false;
     private static final double TICKS_PER_DEGREE = 8192.0/360.0;  //encoder ticks per degree
-    private double targetAngleDegreesMiniArm;
+    public static double targetAngleDegreesMiniArm;
     public static double wristTarget;
-    public static double MAKP = .05;
+    public static double MAKP = .08;
     public static double MAKI = .002;
     public static double MAKD = .001;
     public static double MAKF = .0001;
@@ -96,10 +95,10 @@ public class MotionSubsystem {
         miniArmPID = new PIDFController(MAKP,MAKI,MAKD,MAKF);
         miniArmPID.setTolerance(4);
 
-        Wrist.setDirection(Servo.Direction.REVERSE);
+        //Wrist.setDirection(Servo.Direction.REVERSE);
         //MiniExt.setDirection(Servo.Direction.REVERSE);
 
-        digitalTouch = hardwareMap.get(DigitalChannel.class, "sensor_digital");
+        digitalTouch = hardwareMap.get(TouchSensor.class, "sensor_digital");
     }
 
     public void start(){
@@ -135,8 +134,9 @@ public class MotionSubsystem {
         if (gamepad1.x) wallPickupPrep();
         if (gamepad1.y) closeClaw();
         if (gamepad1.left_bumper) clawOpen();
-        if (gamepad1.dpad_left) wristTarget++;
-        if (gamepad1.dpad_right) wristTarget--;
+        if (gamepad1.dpad_left) wristTarget = wristTarget + 0.005;
+        if (gamepad1.dpad_right) wristTarget = wristTarget - 0.005;
+        if (gamepad1.options) Wrist.setPosition(wristTarget);
     }
 
     /**
@@ -153,7 +153,7 @@ public class MotionSubsystem {
         if (gamepad2.dpad_right) Wrist.setPosition(Wrist.getPosition()-0.005);
         if (gamepad2.dpad_up) IntakeFlip.setPosition(IntakeFlip.getPosition() + 0.005);
         if (gamepad2.dpad_down) IntakeFlip.setPosition(IntakeFlip.getPosition() - 0.005);
-        if (gamepad2.back) targetAngleDegreesMiniArm -= 0.05;
+        if (gamepad2.back) setVertTarget(3.0);
         if (gamepad2.start) targetAngleDegreesMiniArm += 0.05;
         if (gamepad2.left_stick_button) MiniExt.setPosition(MiniExt.getPosition() - 0.0005);
         if (gamepad2.right_stick_button) MiniExt.setPosition(MiniExt.getPosition() + 0.0005);
@@ -175,7 +175,7 @@ public class MotionSubsystem {
 
     public void outTake(){
         if (!isOutTaking) {
-            IntakeFlip.setPosition(.65);
+            IntakeFlip.setPosition(.85);
             outTakeStartTime = System.currentTimeMillis();
             isOutTaking = true;
         } else {
@@ -195,7 +195,7 @@ public class MotionSubsystem {
         MiniExt.setPosition(0);
         targetAngleDegreesMiniArm = 17.5;
         Wrist.setPosition(0.7);
-        VertTarget = 0;
+        VertTarget = 0.75;
         state = "Drive Position";
 
     }
@@ -214,9 +214,9 @@ public class MotionSubsystem {
 
     public void wallPickupPrep(){
         clawOpen();
-        MiniExt.setPosition(.3);
+        MiniExt.setPosition(.66);
         targetAngleDegreesMiniArm = 12;
-        Wrist.setPosition(0.43);
+        Wrist.setPosition(0.48);
         state = "Wall Pickup Prep";
     }
 
@@ -224,19 +224,23 @@ public class MotionSubsystem {
         HoriExtL.setPosition(0.15);
         HoriExtR.setPosition(0.15);
         IntakeFlip.setPosition(.475);
+        VertTarget = 0;
 
-        Wrist.setPosition(.425);
+        Wrist.setPosition(.60);
         MiniExt.setPosition(.175);
 
-        targetAngleDegreesMiniArm = 15;
+        targetAngleDegreesMiniArm = 16.5;
 
         // Continuously check distance sensor regardless of timer state
         double currentDistance = sensorDistance.getDistance(DistanceUnit.CM);
         telemetry.addData("Distance", currentDistance);
 
-        if (currentDistance >= 2.7) {
+        if (currentDistance >= 3) {
             Intake.setPower(0);
+
+        if(vertExtension.atSetPoint()){
             closeClaw();
+        }
         } else {
             Intake.setPower(-1);
         }
@@ -251,8 +255,8 @@ public class MotionSubsystem {
     public void sampleScoreLow(){
         MiniExt.setPosition(1);
         targetAngleDegreesMiniArm = 125;
-        Wrist.setPosition(0.6);
-        VertTarget = 5;
+        Wrist.setPosition(0.92);
+        VertTarget = 3.5;
         state = "Score Sample Low";
     }
 
@@ -262,28 +266,28 @@ public class MotionSubsystem {
 
     public void sampleScoreHigh(){
         targetAngleDegreesMiniArm = 125;
-        Wrist.setPosition(0.6);
-        VertTarget = 17;
+        Wrist.setPosition(0.92);
+        VertTarget = 15;
         MiniExt.setPosition(1);
         state = "Score Sample High";
     }
 
     public void specimenPrep(){
-        VertTarget = 0.0;
-        targetAngleDegreesMiniArm = 92;
+        VertTarget = 0.15;
+        targetAngleDegreesMiniArm = 98;
         Wrist.setPosition(1);
-        MiniExt.setPosition(.2);
+        MiniExt.setPosition(.17);
         state = "Specimen Prep";
     }
 
     public void specimenScore(){
-        VertTarget = 7.5;
-
-        if (vertIN > 6.0){
+        if (vertIN > 5.25){
             clawOpen();
+            Wrist.setPosition(.5);
             drivePos();
             state = "Score Specimen Release";
         } else {
+            VertTarget = 5.75;
             state = "Score Specimen Up";
         }
     }
@@ -335,8 +339,8 @@ public class MotionSubsystem {
         //telemetry.addData("VertExtL", VertLeft.getCurrentPosition());
         //telemetry.addData("VertExtR", VertRight.getCurrentPosition());
         telemetry.addData("VertTarget", VertTarget);
-        //telemetry.addData("WristTarget", wristTarget);
-        //telemetry.addData("MiniArm Error", miniArmPID.getPositionError());
+        telemetry.addData("WristTarget", wristTarget);
+        telemetry.addData("MiniArm Error", miniArmPID.getPositionError());
         telemetry.addData("vert error", vertExtension.getPositionError());
 
         telemetry.addData("Vert check",vertExtension.atSetPoint());
@@ -354,11 +358,11 @@ public class MotionSubsystem {
      * PID Control code
      */
     public void updateVert(){
-        /*
-        if (digitalTouch.getState()) {
-            vertOffest += vertIN; TODO fix this shit... always sets the thing to zero prolly cus i set it as a digiital device and not a rev touch sensor but to dumb to fix
-        }
-        */
+
+//        if (digitalTouch.isPressed()) {
+//            vertOffest += vertIN; //TODO fix this shit... always sets the thing to zero prolly cus i set it as a digiital device and not a rev touch sensor but to dumb to fix
+//        }
+
 
         vertTicks = (VertLeft.getCurrentPosition() + -VertRight.getCurrentPosition())/2.0;
         vertIN = vertTicks / 450 - vertOffest;

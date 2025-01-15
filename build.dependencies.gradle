@@ -20,7 +20,7 @@ dependencies {
         exclude group: 'org.firstinspires.ftc'
     }
 
-    implementation 'com.pedropathing:pedro:1.0.3'
+    implementation 'com.pedropathing:pedro:1.0.6'
 
     //implementation 'com.github.Eeshwar-Krishnan:PhotonFTC:3.0.3-ALPHA'
 }
