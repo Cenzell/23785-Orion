@@ -134,8 +134,8 @@ public class MotionSubsystem {
         if (gamepad1.x) wallPickupPrep();
         if (gamepad1.y) closeClaw();
         if (gamepad1.left_bumper) clawOpen();
-        if (gamepad1.dpad_left) wristTarget = wristTarget + 0.005;
-        if (gamepad1.dpad_right) wristTarget = wristTarget - 0.005;
+        //if (gamepad1.dpad_left) climbPrep();
+        //if (gamepad1.dpad_right) climbOne();
         if (gamepad1.options) Wrist.setPosition(wristTarget);
     }
 
@@ -197,7 +197,6 @@ public class MotionSubsystem {
         Wrist.setPosition(0.7);
         VertTarget = 0.75;
         state = "Drive Position";
-
     }
 
     public void intakePos(){
@@ -216,7 +215,7 @@ public class MotionSubsystem {
         clawOpen();
         MiniExt.setPosition(.66);
         targetAngleDegreesMiniArm = 12;
-        Wrist.setPosition(0.48);
+        Wrist.setPosition(0.40);
         state = "Wall Pickup Prep";
     }
 
@@ -293,11 +292,14 @@ public class MotionSubsystem {
     }
 
     public void climbPrep(){
-        //Todo set vertical extension
+        VertTarget = 12;
+        targetAngleDegreesMiniArm=60;
         state = "Climb Prep";
     }
 
     public void climbOne(){
+        VertTarget = 0;
+        //drivePos();
         //Todo set vertical extension
         //TODO set smth with miniArm position
         state = "Stage One Climb";
@@ -334,7 +336,7 @@ public class MotionSubsystem {
         telemetry.addData("State", state);
         //telemetry.addData("Right Pos", HoriExtR.getPosition());
         //telemetry.addData("Left Pos", HoriExtL.getPosition());
-        telemetry.addData("MiniArm", MiniArm.getCurrentPosition() / TICKS_PER_DEGREE);
+        //telemetry.addData("MiniArm", MiniArm.getCurrentPosition() / TICKS_PER_DEGREE);
         telemetry.addData("miniTarget", targetAngleDegreesMiniArm);
         //telemetry.addData("VertExtL", VertLeft.getCurrentPosition());
         //telemetry.addData("VertExtR", VertRight.getCurrentPosition());

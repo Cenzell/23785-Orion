@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.BirdNest.Subsystems.DriveSubsystem;
@@ -31,7 +32,7 @@ import java.util.List;
 @Autonomous(name = "BG", group = "Examples")
 public class BGAuto extends OpMode {
 
-    private enum Stages {
+    private enum AutoState {
         LINEUP,
         PREP_ZERO,
         PREP_ONE,
@@ -54,12 +55,13 @@ public class BGAuto extends OpMode {
         SCORE_FIVE;
     }
 
+    private AutoState currentState = AutoState.LINEUP;
+    private ElapsedTime stateTimer = new ElapsedTime();
+
     private Follower follower;
     private Path[] paths = new Path[16];
     private Telemetry telemetryA;
     private final Pose startPose = new Pose(11, 64, Math.toRadians(180));
-
-    private Stages currentState = Stages.LINEUP;
 
     MotionSubsystem motionSubsystem;
     private int currentStage = 0;
@@ -79,6 +81,7 @@ public class BGAuto extends OpMode {
         follower.setPose(new Pose(11,64, Math.toRadians(180)));
 
         telemetryA = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
+        stateTimer.reset();
     }
 
     public PathBuilder lineup, prep0, prep1, prep2, prep3, prep4, prep5, push1, push2, push3, push4, push5, return1, return2, return3, speci_one, speci_two, speci_three, speci_four, speci_five, score_one, score_two, score_three;
@@ -294,87 +297,87 @@ public class BGAuto extends OpMode {
                 if(!follower.isBusy()){
                     follower.followPath(paths[0]);}
                     motionSubsystem.specimenPrep();
-                if (follower.atParametricEnd() && isMotionComplete()) {
-                    currentState = Stages.PREP_ZERO;
+                if ((follower.atParametricEnd() && isMotionComplete())) {
+                    currentState = AutoState.PREP_ZERO;
                 }
                 break;
             case PREP_ZERO:
                 if(!follower.isBusy()){
                     follower.followPath(paths[1]);}
                 if (follower.atParametricEnd() && isMotionComplete()){
-                    currentState = Stages.PREP_ONE;
+                    currentState = AutoState.PREP_ONE;
                 }
                 break;
             case PREP_ONE:
                 follower.followPath(paths[2]);
                 if(follower.atParametricEnd() && isMotionComplete()){
-                    currentState = Stages.PUSH_ONE;
+                    currentState = AutoState.PUSH_ONE;
                 }
                 break;
             case PUSH_ONE:
                 follower.followPath(paths[3]);
                 if(follower.atParametricEnd() && isMotionComplete()){
-                    currentState = Stages.RETURN_ONE;
+                    currentState = AutoState.RETURN_ONE;
                 }
                 break;
             case RETURN_ONE:
                 follower.followPath(paths[4]);
                 if(follower.atParametricEnd() && isMotionComplete()){
-                    currentState = Stages.PREP_TWO;
+                    currentState = AutoState.PREP_TWO;
                 }
                 break;
             case PREP_TWO:
                 follower.followPath(paths[5]);
                 if(follower.atParametricEnd() && isMotionComplete()){
-                    currentState = Stages.PUSH_TWO;
+                    currentState = AutoState.PUSH_TWO;
                 }
                 break;
             case PUSH_TWO:
                 follower.followPath(paths[6]);
                 if(follower.atParametricEnd() && isMotionComplete()){
-                    currentState = Stages.RETURN_TWO;
+                    currentState = AutoState.RETURN_TWO;
                 }
                 break;
             case PREP_THREE:
                 follower.followPath(paths[7]);
                 if(follower.atParametricEnd() && isMotionComplete()){
-                    currentState = Stages.PUSH_THREE;
+                    currentState = AutoState.PUSH_THREE;
                 }
                 break;
             case PUSH_THREE:
                 follower.followPath(paths[8]);
                 if (follower.atParametricEnd() && isMotionComplete()){
-                    currentState = Stages.SPECI_ONE;
+                    currentState = AutoState.SPECI_ONE;
                 }
                 break;
             case SPECI_ONE:
                 follower.followPath(paths[9]);
                 if (follower.atParametricEnd() && isMotionComplete()){
-                    currentState = Stages.SCORE_ONE;
+                    currentState = AutoState.SCORE_ONE;
                 }
                 break;
             case SCORE_ONE:
                 follower.followPath(paths[10]);
                 if (follower.atParametricEnd() && isMotionComplete()){
-                    currentState = Stages.SPECI_TWO;
+                    currentState = AutoState.SPECI_TWO;
                 }
                 break;
             case SPECI_TWO:
                 follower.followPath(paths[11]);
                 if (follower.atParametricEnd() && isMotionComplete()){
-                    currentState = Stages.SCORE_TWO;
+                    currentState = AutoState.SCORE_TWO;
                 }
                 break;
             case SCORE_TWO:
                 follower.followPath(paths[12]);
                 if(follower.atParametricEnd() && isMotionComplete()){
-                    currentState = Stages.SPECI_THREE;
+                    currentState = AutoState.SPECI_THREE;
                 }
                 break;
             case SPECI_THREE:
                 follower.followPath(paths[13]);
                 if(follower.atParametricEnd() && isMotionComplete()){
-                    currentState = Stages.SCORE_THREE;
+                    currentState = AutoState.SCORE_THREE;
                 }
                 break;
             case SCORE_THREE:
