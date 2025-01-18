@@ -215,7 +215,7 @@ public class MotionSubsystem {
         clawOpen();
         MiniExt.setPosition(.66);
         targetAngleDegreesMiniArm = 12;
-        Wrist.setPosition(0.40);
+        Wrist.setPosition(0.64);
         state = "Wall Pickup Prep";
     }
 
@@ -273,6 +273,7 @@ public class MotionSubsystem {
 
     public void specimenPrep(){
         VertTarget = 0.15;
+        closeClaw();
         targetAngleDegreesMiniArm = 98;
         Wrist.setPosition(1);
         MiniExt.setPosition(.17);
@@ -280,7 +281,7 @@ public class MotionSubsystem {
     }
 
     public void specimenScore(){
-        if (vertIN > 5.25){
+        if (vertIN > 5.1){
             clawOpen();
             Wrist.setPosition(.5);
             drivePos();
