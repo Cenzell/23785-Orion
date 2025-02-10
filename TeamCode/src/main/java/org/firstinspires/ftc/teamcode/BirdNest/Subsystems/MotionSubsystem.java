@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.*;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.Locale;
 
@@ -25,6 +26,16 @@ public class MotionSubsystem {
     public DcMotorImpl Intake;          // Intake motor
     public DcMotorEx VertLeft;        // Left vertical extension motor
     public TouchSensor digitalTouch;
+
+    public static double TransHoriL = 0.15;
+    public static double TransHoriR = 0.15;
+    public static double TransVertTarget = 0.65;
+    public static double TransMiniArmDeg = 20;
+    public static double TransWrist = 0.49;
+    public static double TransMiniExtDistance = 0.3;
+    public static double TransVertIN = 0.65;
+    public static double TransIntakeFlip = 0.38;
+    public static double TransCurrentDIstance = 3;
 
     // Control Components
     private Telemetry telemetry;
@@ -57,8 +68,13 @@ public class MotionSubsystem {
 
     double vertOffest = 0;
 
+    public boolean transfer = false;
+    private ElapsedTime trTimer = new ElapsedTime();
+
 
     public static double VertP = 0.35, VertI = 0.25, VertD = 0, VertF = 0;
+
+    double currentDistance;
 
     public String state = "";
     /**
@@ -91,9 +107,11 @@ public class MotionSubsystem {
         sensorDistance = hardwareMap.get(DistanceSensor.class, "sensor_color_distance");
         // Initialize Controllers
         vertExtension = new PIDFController(VertP, VertI, VertD, VertF);
-        vertExtension.setTolerance(2);
+        vertExtension.setTolerance(1);
         miniArmPID = new PIDFController(MAKP,MAKI,MAKD,MAKF);
         miniArmPID.setTolerance(4);
+
+        trTimer.reset();
 
         //Wrist.setDirection(Servo.Direction.REVERSE);
         //MiniExt.setDirection(Servo.Direction.REVERSE);
@@ -145,18 +163,21 @@ public class MotionSubsystem {
     private void handleGamepad2Controls() {
         if (gamepad2.x) specimenPrep();
         if (gamepad2.y) specimenScore();
-        if (gamepad2.b) sampleScoreHigh();
-        if (gamepad2.a) sampleScoreLow();
+        //if (gamepad2.b) sampleScoreHigh();
+        //if (gamepad2.a) sampleScoreLow();
+        if (gamepad2.b) targetAngleDegreesMiniArm -= 0.5;
+        if (gamepad2.a) targetAngleDegreesMiniArm += 0.5;
         if (gamepad2.left_trigger > .05) transfer();
-        if (gamepad2.left_bumper) VertTarget = 4.0;
-        if (gamepad2.dpad_left) Wrist.setPosition(Wrist.getPosition()+0.005);
-        if (gamepad2.dpad_right) Wrist.setPosition(Wrist.getPosition()-0.005);
-        if (gamepad2.dpad_up) IntakeFlip.setPosition(IntakeFlip.getPosition() + 0.005);
-        if (gamepad2.dpad_down) IntakeFlip.setPosition(IntakeFlip.getPosition() - 0.005);
-        if (gamepad2.back) setVertTarget(3.0);
-        if (gamepad2.start) targetAngleDegreesMiniArm += 0.05;
-        if (gamepad2.left_stick_button) MiniExt.setPosition(MiniExt.getPosition() - 0.0005);
-        if (gamepad2.right_stick_button) MiniExt.setPosition(MiniExt.getPosition() + 0.0005);
+        if (gamepad2.left_bumper) VertTarget += 0.1;
+        if (gamepad2.right_bumper) VertTarget -= 0.1;
+        if (gamepad2.dpad_left) Wrist.setPosition(Wrist.getPosition()+0.01);
+        if (gamepad2.dpad_right) Wrist.setPosition(Wrist.getPosition()-0.01);
+        if (gamepad2.dpad_up) IntakeFlip.setPosition(IntakeFlip.getPosition() + 0.01);
+        if (gamepad2.dpad_down) IntakeFlip.setPosition(IntakeFlip.getPosition() - 0.01);
+        if (gamepad2.back) targetAngleDegreesMiniArm -= 0.02;
+        if (gamepad2.start) targetAngleDegreesMiniArm += 0.02;
+        if (gamepad2.left_stick_button) MiniExt.setPosition(MiniExt.getPosition() - 0.01);
+        if (gamepad2.right_stick_button) MiniExt.setPosition(MiniExt.getPosition() + 0.01);
         //if (gamepad2.left_bumper) climbPrep();
         //if (gamepad2.right_bumper) climbOne();
         //if (gamepad2.right_trigger > .05) climbTwo();
@@ -192,8 +213,8 @@ public class MotionSubsystem {
         HoriExtR.setPosition(0.15);
         IntakeFlip.setPosition(.08);
         Intake.setPower(0);
-        MiniExt.setPosition(0);
-        targetAngleDegreesMiniArm = 17.5;
+        MiniExt.setPosition(.32);
+        targetAngleDegreesMiniArm = 18;
         Wrist.setPosition(0.7);
         VertTarget = 0.75;
         state = "Drive Position";
@@ -213,47 +234,40 @@ public class MotionSubsystem {
 
     public void wallPickupPrep(){
         clawOpen();
+        setVertTarget(0.5);
         MiniExt.setPosition(.66);
         targetAngleDegreesMiniArm = 12;
-        Wrist.setPosition(0.64);
+        Wrist.setPosition(0.62);
         state = "Wall Pickup Prep";
     }
 
     public void transfer() {
-        HoriExtL.setPosition(0.15);
-        HoriExtR.setPosition(0.15);
-        IntakeFlip.setPosition(.475);
-        VertTarget = 0;
+        HoriExtL.setPosition(TransHoriL);
+        HoriExtR.setPosition(TransHoriR);
+        VertTarget = TransVertTarget;
+        targetAngleDegreesMiniArm = TransMiniArmDeg;
+        Wrist.setPosition(TransWrist);
+        MiniExt.setPosition(TransMiniExtDistance);
+        vertIN = TransVertIN;
 
-        Wrist.setPosition(.60);
-        MiniExt.setPosition(.175);
+        if (IntakeFlip.getPosition() != TransIntakeFlip) {
+            IntakeFlip.setPosition(TransIntakeFlip);
+        }
 
-        targetAngleDegreesMiniArm = 16.5;
+        currentDistance = sensorDistance.getDistance(DistanceUnit.CM);
 
-        // Continuously check distance sensor regardless of timer state
-        double currentDistance = sensorDistance.getDistance(DistanceUnit.CM);
-        telemetry.addData("Distance", currentDistance);
-
-        if (currentDistance >= 3) {
+        if(currentDistance < TransCurrentDIstance){
+            Intake.setPower(-.5);
+        }else{
             Intake.setPower(0);
-
-        if(vertExtension.atSetPoint()){
             closeClaw();
-        }
-        } else {
-            Intake.setPower(-1);
-        }
-
-        if (Claw.getPosition() < .1) {
-            //VertTarget = 4.0;
-            state = "Transfer Position - Vertical Extension";
         }
 
     }
 
     public void sampleScoreLow(){
-        MiniExt.setPosition(1);
-        targetAngleDegreesMiniArm = 125;
+        MiniExt.setPosition(.9);
+        targetAngleDegreesMiniArm = 105;
         Wrist.setPosition(0.92);
         VertTarget = 3.5;
         state = "Score Sample Low";
@@ -264,10 +278,10 @@ public class MotionSubsystem {
     }
 
     public void sampleScoreHigh(){
-        targetAngleDegreesMiniArm = 125;
+        targetAngleDegreesMiniArm = 105;
         Wrist.setPosition(0.92);
         VertTarget = 15;
-        MiniExt.setPosition(1);
+        MiniExt.setPosition(9);
         state = "Score Sample High";
     }
 
@@ -276,7 +290,7 @@ public class MotionSubsystem {
         closeClaw();
         targetAngleDegreesMiniArm = 98;
         Wrist.setPosition(1);
-        MiniExt.setPosition(.17);
+        MiniExt.setPosition(.3);
         state = "Specimen Prep";
     }
 
@@ -321,12 +335,12 @@ public class MotionSubsystem {
     }
 
     public void closeClaw(){
-        Claw.setPosition(.3);
+        Claw.setPosition(.43);
         state = "Claw Closed";
     }
 
     public void clawOpen(){
-        Claw.setPosition(1);
+        Claw.setPosition(0.23);
         state = "Claw Open";
     }
 
@@ -337,24 +351,26 @@ public class MotionSubsystem {
         telemetry.addData("State", state);
         //telemetry.addData("Right Pos", HoriExtR.getPosition());
         //telemetry.addData("Left Pos", HoriExtL.getPosition());
-        //telemetry.addData("MiniArm", MiniArm.getCurrentPosition() / TICKS_PER_DEGREE);
+        telemetry.addData("MiniArm", MiniArm.getCurrentPosition() / TICKS_PER_DEGREE);
+        telemetry.addData("VertExtL", VertLeft.getCurrentPosition());
+        telemetry.addData("VertExtR", VertRight.getCurrentPosition());
         telemetry.addData("miniTarget", targetAngleDegreesMiniArm);
-        //telemetry.addData("VertExtL", VertLeft.getCurrentPosition());
-        //telemetry.addData("VertExtR", VertRight.getCurrentPosition());
         telemetry.addData("VertTarget", VertTarget);
         telemetry.addData("WristTarget", wristTarget);
+        telemetry.addData("WristPos", Wrist.getPosition());
+        telemetry.addData("MiniExt Target", MiniExt.getPosition());
         telemetry.addData("MiniArm Error", miniArmPID.getPositionError());
+        telemetry.addData("IntakeFlip", IntakeFlip.getPosition());
         telemetry.addData("vert error", vertExtension.getPositionError());
 
         telemetry.addData("Vert check",vertExtension.atSetPoint());
         telemetry.addData("MiniArm check", miniArmPID.atSetPoint());
 
-        telemetry.addData("MiniExt Target", MiniExt.getPosition());
-        telemetry.addData("WristPos", Wrist.getPosition());
-        telemetry.addData("Intake", IntakeFlip.getPosition());
         telemetry.addData("VertIn", vertIN);
         telemetry.addData("Distance (CM)",
                 String.format(Locale.US, "%.02f", sensorDistance.getDistance(DistanceUnit.CM)));
+        telemetry.addData("Claw Pos:", Claw.getPosition());
+        telemetry.addData("Distance", currentDistance);
     }
 
     /**

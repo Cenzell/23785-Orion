@@ -63,8 +63,8 @@ public class DriveSubsystem {
     public void loop() {
         // Update follower with gamepad inputs - added false parameter for field-centric drive
         follower.setTeleOpMovementVectors(
-                -gamepad1.left_stick_y,
-                -gamepad1.left_stick_x,
+                gamepad1.left_stick_y,
+                gamepad1.left_stick_x,
                 -gamepad1.right_stick_x,
                 false  // Set to false for field-centric drive
         );

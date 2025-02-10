@@ -22,16 +22,16 @@ public class FConstants {
 
         FollowerConstants.mass = 16.5293;
 
-        FollowerConstants.xMovement = 63.3828;
-        FollowerConstants.yMovement = 39.2466;
+        FollowerConstants.xMovement = 46.94;
+        FollowerConstants.yMovement = 31.8154;
 
-        FollowerConstants.forwardZeroPowerAcceleration = -55.521;
-        FollowerConstants.lateralZeroPowerAcceleration = -121.2911;
+        FollowerConstants.forwardZeroPowerAcceleration = -77.0936; //-55.521
+        FollowerConstants.lateralZeroPowerAcceleration = -99.9748; //-121.2911
 
         FollowerConstants.translationalPIDFCoefficients = new CustomPIDFCoefficients(.15,.1,.05,.1);
         //FollowerConstants.translationalPIDFCoefficients = new CustomPIDFCoefficients(.1,.1,.05,.1);
         FollowerConstants.useSecondaryTranslationalPID = true;
-        FollowerConstants.secondaryTranslationalPIDFCoefficients = new CustomPIDFCoefficients(.1,.0,0.05,.0);
+        FollowerConstants.secondaryTranslationalPIDFCoefficients = new CustomPIDFCoefficients(.085,.0,0.05,.0);
         //FollowerConstants.secondaryTranslationalPIDFCoefficients = new CustomPIDFCoefficients(.015,.0,0.10,.0);
 
         FollowerConstants.headingPIDFCoefficients = new CustomPIDFCoefficients(2,0,0.1,0);

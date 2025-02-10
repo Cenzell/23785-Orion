@@ -23,7 +23,7 @@ import pedroPathing.constants.LConstants;
 import java.util.ArrayList;
 import java.util.List;
 
-@Autonomous(name = "CARTER-AUSTIN", group = "1Examples")
+@Autonomous(name = "Test Number Too Many")
 public class Auto extends OpMode {
     private Follower follower;
     private List<PathChain> paths = new ArrayList<>();
@@ -31,8 +31,7 @@ public class Auto extends OpMode {
     private final Pose startPose = new Pose(11, 64, Math.toRadians(180));
 
     MotionSubsystem motionSubsystem;
-    private int currentStage = 0;
-    private boolean stageComplete = false;
+    private int currentStage = 1;
 
     private ElapsedTime Timer = new ElapsedTime();
     private boolean TimerStarted = false;
@@ -48,7 +47,8 @@ public class Auto extends OpMode {
         follower.setStartingPose(startPose);
 
         initializePaths();
-        Lineup();
+        follower.setMaxPower(0);
+        follower.followPath(paths.get(0));
 
         telemetryA = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
     }
@@ -164,17 +164,18 @@ public class Auto extends OpMode {
                 ))
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
-        //speci 1
+        //speci 2
         //10
         builder = new PathBuilder();
         paths.add(builder
-                .addPath(new BezierLine(
-                        new Point(26.000, 11.000, Point.CARTESIAN),
+                .addPath(new BezierCurve(
+                        new Point(25.000, 11.000, Point.CARTESIAN),
+                        new Point(32.000, 37.000, Point.CARTESIAN),
                         new Point(12.000, 31.000, Point.CARTESIAN)
                 ))
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
-        //score 1
+        //score 2
         //11
         builder = new PathBuilder();
         paths.add(builder
@@ -186,7 +187,7 @@ public class Auto extends OpMode {
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
 
-        // speci 2
+        // speci 3
         //12
         builder = new PathBuilder();
         paths.add(builder
@@ -196,7 +197,7 @@ public class Auto extends OpMode {
                 ))
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
-        //score 2
+        //score 3
         //13
         builder = new PathBuilder();
         paths.add(builder
@@ -208,7 +209,7 @@ public class Auto extends OpMode {
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
 
-        // speci 3
+        // speci 4
         //14
         builder = new PathBuilder();
         paths.add(builder
@@ -219,7 +220,7 @@ public class Auto extends OpMode {
                 ))
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
-        //score 3
+        //score 4
         //15
         builder = new PathBuilder();
         paths.add(builder
@@ -230,6 +231,8 @@ public class Auto extends OpMode {
                 ))
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
+        //park I hope
+        //16
         builder = new PathBuilder();
         paths.add(builder
                 .addPath(new BezierLine(
@@ -247,318 +250,185 @@ public class Auto extends OpMode {
         return  vertComplete && miniArmComplete;
     }
 
-    private void Lineup() { //Lineup
-        stageComplete = false;
-        motionSubsystem.specimenPrep();
-        follower.followPath(paths.get(0));
-        motionSubsystem.closeClaw();
-        //motionSubsystem.setVertTarget(0.5);
-        currentStage = 1;
-        follower.setMaxPower(0.75);
-    }
-
-    private void PrepZero(){ //Prep 0
-        stageComplete = false;
-        currentStage = 101;
-        motionSubsystem.specimenScore();
-        follower.setMaxPower(1);
-        follower.holdPoint(new Pose(40.5000, 64.000, Math.toRadians(180)));
-    }
-
-    private void PrepTwo() { // Prep 1
-        stageComplete = false;
-        motionSubsystem.clawOpen();
-        follower.followPath(paths.get(1));
-        motionSubsystem.drivePos();
-        currentStage = 2;
-        follower.setMaxPower(1);
-    }
-
-    private void PushOne() { // Push 1
-        stageComplete = false;
-        follower.followPath(paths.get(2));
-        currentStage = 3;
-        motionSubsystem.wallPickupPrep();
-    }
-
-    private void ReturnOne() { // Return 1
-        stageComplete = false;
-        follower.followPath(paths.get(3));
-        currentStage = 4;
-    }
-
-    private void PushPrepTwo() { // Push Prep 2
-        stageComplete = false;
-        follower.followPath(paths.get(4));
-        currentStage = 5;
-    }
-
-    private void PushTwo() { // Push 2
-        stageComplete = false;
-        follower.followPath(paths.get(5));
-        currentStage = 6;
-    }
-
-    private void ReturnTwo() { // Return 2
-        stageComplete = false;
-        follower.followPath(paths.get(6));
-        currentStage = 7;
-    }
-
-    private void PushPrepThree() { // Push Prep 3
-        stageComplete = false;
-        follower.followPath(paths.get(7));
-        currentStage = 8;
-    }
-
-    private void PushThree() { // Push 3
-        stageComplete = false;
-        follower.followPath(paths.get(8));
-        currentStage = 9;
-    }
-
-    private void SpeciOne() { // Speci 1
-        stageComplete = false;
-        follower.followPath(paths.get(9));
-        currentStage = 10;
-        motionSubsystem.wallPickupPrep();
-    }
-
-    private void SpeciPickupOne(){
-        stageComplete = false;
-        motionSubsystem.closeClaw();
-        motionSubsystem.specimenPrep();
-        currentStage = 200;
-    }
-
-    private void ScoreOne() { // Score 1
-        stageComplete = false;
-        motionSubsystem.wallPickupPrep();
-        //motionSubsystem.closeClaw();
-        //motionSubsystem.specimenPrep();
-        follower.followPath(paths.get(10));
-        currentStage = 102;
-    }
-
-    private void pointsOne(){ //actually scores
-        stageComplete = false;
-        motionSubsystem.specimenPrep();
-        follower.followPath(paths.get(11));
-        currentStage = 103;
-    }
-
-    private void SpeciPickupTwo(){
-        stageComplete = false;
-        motionSubsystem.specimenScore();
-        //follower.holdPoint(new Pose(40.500, 62.000, Math.toRadians(180)));
-        currentStage = 11;
-    }
-
-    private void SpeciTwo() { // Speci 2
-        stageComplete = false;
-        motionSubsystem.wallPickupPrep();
-        follower.followPath(paths.get(12));
-        currentStage = 12;
-    }
-
-    private void SpeciPickupThree(){
-        stageComplete = false;
-        motionSubsystem.closeClaw();
-        motionSubsystem.specimenPrep();
-        currentStage = 203;
-    }
-
-    private void ScoreTwo() { // Score 2
-        stageComplete = false;
-        //motionSubsystem.clawOpen();
-        //motionSubsystem.specimenPrep();
-        follower.followPath(paths.get(13));
-        currentStage = 13;
-    }
-
-    private void SpeciThree() { // Speci 3
-        stageComplete = false;
-        motionSubsystem.specimenScore();
-        currentStage = 14;
-    }
-
-    private void SpeciPickupFour(){
-        stageComplete = false;
-        motionSubsystem.wallPickupPrep();
-        follower.followPath(paths.get(14));
-        currentStage = 15;
-    }
-
-
-    private void startStageFifteen() { // Score 3
-        stageComplete = false;
-        motionSubsystem.closeClaw();
-        motionSubsystem.specimenPrep();
-        //follower.followPath(paths.get(15));
-        currentStage = 16
-        ;
-    } private void startStageSixteen() {
-        follower.followPath(paths.get(15));
-        if(follower.atParametricEnd()){
-            stageComplete = false;
-            motionSubsystem.specimenScore();
-            currentStage = 17;
+    public void setPath(int path){
+        if(follower.getCurrentPath() != paths.get(path).getPath(path)){
+            follower.followPath(paths.get(path));
         }
-
     }
-
 
     @Override
     public void loop() {
         follower.update();
         motionSubsystem.loop();
+        follower.setMaxPower(1);
 
         switch (currentStage) {
-            case 1:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    PrepZero();
+            case 1: //lineup to score specimen
+                motionSubsystem.specimenPrep();
+                motionSubsystem.closeClaw();
+                if (follower.atParametricEnd()) {
+                    currentStage = 2;
                 }
                 break;
 
-            case 101:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    PrepTwo();
+            case 2: //score specimen and hold location
+                motionSubsystem.specimenScore();
+                motionSubsystem.setVertTarget(5.8);
+
+                //follower.setMaxPower(1);
+                follower.holdPoint(new Pose(40.5000, 64.000, Math.toRadians(180)));
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 3;
+                    follower.followPath(paths.get(1));
                 }
                 break;
 
-            case 2:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    PushOne();
+            case 3: // move to next position
+                motionSubsystem.clawOpen();
+                motionSubsystem.drivePos();
+                //follower.setMaxPower(1);
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 4;
+                    follower.followPath(paths.get(2));
                 }
                 break;
 
-            case 3:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    ReturnOne();
-                }
-                break;
-            case 4:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    PushPrepTwo();
+            case 4: //move to align with push 1
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 5;
+                    follower.followPath(paths.get(3));
                 }
                 break;
 
-            case 5:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    PushTwo();
+            case 5: //push piece one
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 6;
+                    follower.followPath(paths.get(4));
                 }
                 break;
 
-            case 6:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    ReturnTwo();
-                }
-                break;
-            case 7:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    PushPrepThree();
+            case 6: //return push 1
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 7;
+                    follower.followPath(paths.get(5));
                 }
                 break;
 
-            case 8:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    PushThree();
+            case 7: //allign for push 2
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 8;
+                    follower.followPath(paths.get(6));
                 }
                 break;
 
-            case 9:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    SpeciOne();
+            case 8: //push piece 2
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 9;
+                    follower.followPath(paths.get(7));
                 }
                 break;
 
-            case 10:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    ScoreOne();
+            case 9: //return piece 2
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 10;
+                    follower.followPath(paths.get(8));
                 }
+                break;
+
+            case 10: //align piece 3
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 11;
+                    follower.followPath(paths.get(9));
+                }
+                break;
+
+            case 11: //push piece 3
                 motionSubsystem.wallPickupPrep();
-                break;
-
-            case 102:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    SpeciPickupOne();
-                }
-                break; //TODO: we forgot to add this to like 5 of these. Oppsie :(
-
-            case 200:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    pointsOne();
-                }
-
-            case 11:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    SpeciTwo();
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 12;
+                    follower.followPath(paths.get(10));
                 }
                 break;
 
-            case 103:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-
-                    SpeciPickupTwo();
+            case 12://align for pickup
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 13;
                 }
                 break;
 
-            case 12:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    SpeciPickupThree();
+            case 13://close claw
+                motionSubsystem.closeClaw();
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 14;
+                }
+
+            case 14://pull off wall
+                motionSubsystem.specimenPrep();
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 15;
+                    follower.followPath(paths.get(11));
                 }
                 break;
-            case 203:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    ScoreTwo();
+
+            case 15://drive to score 2
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 16;
                 }
                 break;
-            case 13:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    SpeciThree();
+
+            case 16://score 2
+                motionSubsystem.specimenScore();
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 17;
+                    follower.followPath(paths.get(12));
                 }
                 break;
-            case 14:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    SpeciPickupFour();
+
+            case 17://align for pickup 3
+                motionSubsystem.clawOpen();
+                motionSubsystem.wallPickupPrep();
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 18;
                 }
                 break;
-            case 15:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    startStageFifteen();
+
+            case 18://grab from wall
+                motionSubsystem.closeClaw();
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 19;
                 }
                 break;
-            case 16:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
-                    startStageSixteen();
+
+            case 19://pull off wall 3
+                motionSubsystem.specimenPrep();
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 20;
+                    follower.followPath(paths.get(13));
                 }
                 break;
-            case 17:
-                if (follower.atParametricEnd() && isMotionComplete() && !stageComplete) {
-                    stageComplete = true;
+
+            case 20://drive to score 3
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 21;
+                }
+                break;
+
+            case 21:
+                motionSubsystem.specimenScore();
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 22;
                     follower.followPath(paths.get(16));
                 }
+                break;
+
+            case 22:
+                if (follower.atParametricEnd() && isMotionComplete()) {
+                    currentStage = 23;
+
+                }
+                break;
+            case 23:
+                //do nothing
                 break;
         }
 
@@ -573,7 +443,10 @@ public class Auto extends OpMode {
         //follower.telemetryDebug(telemetryA);
         telemetryA.addData("////////CurrentState", currentStage);
         telemetryA.addData("////////Follower Path:", follower.getCurrentPath());
-        telemetryA.addData("////////MOveToNext", follower.atParametricEnd() && isMotionComplete() && !stageComplete);
+        telemetryA.addData("////////MoveToNext", follower.atParametricEnd() && isMotionComplete());
+        telemetryA.addData("////////PathComplete", follower.atParametricEnd());
+        telemetryA.addData("////////MotionComplete", isMotionComplete());
+
         telemetryA.update();
     }
 }

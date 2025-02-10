@@ -25,8 +25,8 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Config
-@Autonomous(name = "RuleThemAll", group = "1Examples")
-public class RuleThemAll extends OpMode {
+@Autonomous(name = "PushMe", group = "1Examples")
+public class PushMe extends OpMode {
 
     private enum States {
         TOSUB,
@@ -123,40 +123,22 @@ public class RuleThemAll extends OpMode {
                     bpath = true;
                 }
                 if(Timer.seconds() < 0.05){
-                    follower.followPath(paths.get(0));
-                    follower.setMaxPower(0.9);
+                    follower.followPath(paths.get(1));
+                    //follower.setMaxPower(0.9);
                 }
 
-                motionSubsystem.specimenPrep();
+                //motionSubsystem.specimenPrep();
                 follower.setMaxPower(1);
 
                 if(!follower.isBusy()) {
-                    autoState = States.PUSHPREP1;
+                    autoState = States.PUSH1;
                     Timer.reset();
                 }
                 break;
 
             case PUSHPREP1:
-                if (Timer.seconds() < 0.05){
-                    follower.setMaxPower(1);
-                }
 
-                if (Timer.seconds() < 1.4){
-                    motionSubsystem.specimenScore();
-                }
 
-                if (Timer.seconds() > 1.4 && Timer.seconds() < 1.56){
-                    motionSubsystem.clawOpen();
-                }
-
-                if (Timer.seconds() > 1.75 && Timer.seconds() < 2){
-                    motionSubsystem.drivePos();
-                }
-
-                if(Timer.seconds() > 2 && Timer.seconds() < 2.1){
-                    motionSubsystem.wallPickupPrep();
-                    follower.followPath(paths.get(1));
-                }
 
                 if(Timer.seconds() > 3.1 && !follower.isBusy()) {
                     autoState = States.PUSH1;
@@ -196,7 +178,7 @@ public class RuleThemAll extends OpMode {
                 }
 
                 if(!follower.isBusy()) {
-                    autoState = States.GRABSPECI1;
+                    autoState = States.COM;
                     Timer.reset();
                 }
                 break;
@@ -384,8 +366,8 @@ public class RuleThemAll extends OpMode {
                 .addPath(
                         // Line 1
                         new BezierLine(
-                                new Point(11.000, 64.500, Point.CARTESIAN),
-                                new Point(35, 64.500, Point.CARTESIAN)
+                                new Point(11.000, 64.000, Point.CARTESIAN),
+                                new Point(35.700, 64.000, Point.CARTESIAN)
                         )
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
@@ -396,8 +378,8 @@ public class RuleThemAll extends OpMode {
                 .addPath(
                         // Line 2
                         new BezierCurve(
-                                new Point(35, 64.250, Point.CARTESIAN),
-                                new Point(21.3, 39.7, Point.CARTESIAN),
+                                new Point(11.000, 64.000, Point.CARTESIAN),
+                                new Point(21.5, 39.7, Point.CARTESIAN),
                                 new Point(32.9, 35, Point.CARTESIAN),
                                 new Point(66.400, 33, Point.CARTESIAN),
                                 new Point(66.5,31.2, Point.CARTESIAN)
@@ -410,7 +392,7 @@ public class RuleThemAll extends OpMode {
                 .addPath(
                         // Line 3
                         new BezierLine(
-                                new Point(65.000, 32, Point.CARTESIAN),
+                                new Point(65.500, 32, Point.CARTESIAN),
                                 new Point(26.000, 28.000, Point.CARTESIAN)
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
@@ -483,7 +465,7 @@ public class RuleThemAll extends OpMode {
                         new BezierCurve(
                                 new Point(13.85, 29.9, Point.CARTESIAN),
                                 new Point(14.000, 62.000, Point.CARTESIAN),
-                                new Point(34.200, 62.000, Point.CARTESIAN)
+                                new Point(35.000, 62.000, Point.CARTESIAN)
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
@@ -493,7 +475,7 @@ public class RuleThemAll extends OpMode {
                 .addPath(
                         // Line 10
                         new BezierLine(
-                                new Point(42.200, 62.000, Point.CARTESIAN),
+                                new Point(35.000, 62.000, Point.CARTESIAN),
                                 new Point(13.85, 29.9, Point.CARTESIAN)
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))

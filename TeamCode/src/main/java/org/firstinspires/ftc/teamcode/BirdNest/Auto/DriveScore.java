@@ -25,8 +25,8 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Config
-@Autonomous(name = "RuleThemAll", group = "1Examples")
-public class RuleThemAll extends OpMode {
+@Autonomous(name = "DriveScore", group = "1Examples")
+public class DriveScore extends OpMode {
 
     private enum States {
         TOSUB,
@@ -155,223 +155,17 @@ public class RuleThemAll extends OpMode {
 
                 if(Timer.seconds() > 2 && Timer.seconds() < 2.1){
                     motionSubsystem.wallPickupPrep();
-                    follower.followPath(paths.get(1));
+                    //follower.followPath(paths.get(1));
                 }
 
                 if(Timer.seconds() > 3.1 && !follower.isBusy()) {
-                    autoState = States.PUSH1;
+                    autoState = States.COM;
                     Timer.reset();
                 }
                 break;
 
-            case PUSH1:
-                if(Timer.seconds() < 0.05){
-                    follower.followPath(paths.get(2));
-                }
-
-                motionSubsystem.drivePos();
-
-                if(!follower.isBusy()) {
-                    autoState = States.PUSHPREP2;
-                    Timer.reset();
-                }
-                break;
-
-            case PUSHPREP2:
-                if(Timer.seconds() < 0.05){
-                    follower.followPath(paths.get(3));
-                }
-
-                motionSubsystem.wallPickupPrep();
-
-                if(!follower.isBusy()) {
-                    Timer.reset();
-                    autoState = States.PUSH2;
-                }
-                break;
-
-            case PUSH2:
-                if(Timer.seconds() < 0.05){
-                    follower.followPath(paths.get(4));
-                }
-
-                if(!follower.isBusy()) {
-                    autoState = States.GRABSPECI1;
-                    Timer.reset();
-                }
-                break;
-
-            /*case PUSHPREP3:
-                if(Timer.seconds() < 0.05){
-                    follower.followPath(paths.get(5));
-                }
-
-                if(!follower.isBusy()) {
-                    autoState = States.PUSH3;
-                    Timer.reset();
-                }
-                break;
-
-            case PUSH3:
-                if(Timer.seconds() < 0.05){
-                    follower.followPath(paths.get(6));
-                }
-
-                if(!follower.isBusy()) {
-                    autoState = States.GRABSPECI1;
-                    Timer.reset();
-                }
-                break;*/
-
-            case GRABSPECI1:
-                if(Timer.seconds() < 0.05){
-                    follower.followPath(paths.get(5));
-                }
-
-                if(!follower.isBusy()) {
-                    motionSubsystem.Claw.setPosition(0.3);
-                    Timer.reset();
-                    autoState = States.PROCESS_SPECI_ONE;
-                }
-                break;
-
-            case PROCESS_SPECI_ONE:
-                if(Timer.seconds() < 0.05){
-                    motionSubsystem.setVertTarget(0.1);
-                }
-
-                motionSubsystem.closeClaw();
-
-                if(Timer.seconds() > 0.2 && Timer.seconds() < 0.6){
-                    motionSubsystem.closeClaw();
-                }
-
-                if(Timer.seconds() > 0.6 && Timer.seconds() < 1){
-                    motionSubsystem.setVertTarget(3);
-                }
-
-                if (Timer.seconds() > 1){
-                    Timer.reset();
-                    autoState = States.SCORE1;
-                }
-                break;
-
-            case SCORE1:
-                if(!score_one && Timer.seconds() < 0.05){
-                    follower.followPath(paths.get(6));
-                    motionSubsystem.drivePos();
-                }
-                if(!score_one && Timer.seconds() < 0.1 && Timer.seconds() > 0.05){
-                    motionSubsystem.Claw.setPosition(0.3);
-                }
-
-
-                if (!follower.isBusy() && Timer.seconds() > 0.2){
-
-                    if (!score_one) {Timer.reset(); score_one = true; motionSubsystem.specimenPrep();}
-
-                    if(score_one && Timer.seconds() < 1){
-                        motionSubsystem.specimenScore();
-                    }
-
-                    if(score_one && Timer.seconds() > 1){
-                        motionSubsystem.clawOpen();
-                        autoState = States.GRABSPECI2;
-                    }
-                }
-                break;
-
-            case GRABSPECI2:
-                if(Timer.seconds() < 0.05){
-                    follower.followPath(paths.get(7));
-                }
-
-                motionSubsystem.wallPickupPrep();
-
-                if(!follower.isBusy()) {
-                    autoState = States.PROCESS_SPECI_TWO;
-                    Timer.reset();
-                }
-                break;
-
-            case PROCESS_SPECI_TWO:
-                //follower.holdPoint(follower.getPose());
-
-                if(Timer.seconds() > 0.2 && Timer.seconds() < 0.5){
-                    motionSubsystem.closeClaw();
-                }
-
-                if (Timer.seconds() > 0.3){
-                    Timer.reset();
-                    autoState = States.SCORE2;
-                }
-                break;
-
-            case SCORE2:
-                if(Timer.seconds() < 0.05){
-                    follower.followPath(paths.get(8));
-                }
-
-                if (!follower.isBusy() && Timer.seconds() > 0.2){
-                    motionSubsystem.specimenPrep();
-
-                    if (!score_two) {Timer.reset(); score_two = true;}
-
-                    if(score_two && Timer.seconds() > 0.6){
-                        motionSubsystem.clawOpen();
-                        autoState = States.PARK;
-                    }
-                }
-                break;
-
-            /*case GRABSPECI3:
-                if(Timer.seconds() < 0.05){
-                    follower.followPath(paths.get(11));
-                }
-
-                motionSubsystem.wallPickupPrep();
-
-                if(!follower.isBusy()) {
-                    autoState = States.PROCESS_SPECI_ONE;
-                    Timer.reset();
-                }
-                break;
-
-            case PROCESS_SPECI_THREE:
-                //follower.holdPoint(follower.getPose());
-
-                if(Timer.seconds() > 0.2 && Timer.seconds() < 0.25){
-                    motionSubsystem.closeClaw();
-                }
-
-                if (Timer.seconds() > 0.3){
-                    Timer.reset();
-                    autoState = States.SCORE1;
-                }
-                break;
-
-            case SCORE3:
-                if(Timer.seconds() < 0.05){
-                    follower.followPath(paths.get(12));
-                }
-
-                if (!follower.isBusy() && Timer.seconds() > 0.2){
-                    motionSubsystem.specimenPrep();
-
-                    if (!score_three) {Timer.reset(); score_three = true;}
-
-                    if(score_one && Timer.seconds() > 0.6){
-                        motionSubsystem.clawOpen();
-                        autoState = States.GRABSPECI2;
-                    }
-                }
-                break;*/
-
-            case PARK:
-                if(Timer.seconds() < 0.05){
-                    follower.followPath(paths.get(9));
-                }
             case COM:
+                motionSubsystem.drivePos();
                 break;
 
         }
@@ -384,8 +178,8 @@ public class RuleThemAll extends OpMode {
                 .addPath(
                         // Line 1
                         new BezierLine(
-                                new Point(11.000, 64.500, Point.CARTESIAN),
-                                new Point(35, 64.500, Point.CARTESIAN)
+                                new Point(11.000, 64.000, Point.CARTESIAN),
+                                new Point(35.700, 64.000, Point.CARTESIAN)
                         )
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
@@ -396,8 +190,8 @@ public class RuleThemAll extends OpMode {
                 .addPath(
                         // Line 2
                         new BezierCurve(
-                                new Point(35, 64.250, Point.CARTESIAN),
-                                new Point(21.3, 39.7, Point.CARTESIAN),
+                                new Point(35.500, 64.000, Point.CARTESIAN),
+                                new Point(21.5, 39.7, Point.CARTESIAN),
                                 new Point(32.9, 35, Point.CARTESIAN),
                                 new Point(66.400, 33, Point.CARTESIAN),
                                 new Point(66.5,31.2, Point.CARTESIAN)
@@ -410,7 +204,7 @@ public class RuleThemAll extends OpMode {
                 .addPath(
                         // Line 3
                         new BezierLine(
-                                new Point(65.000, 32, Point.CARTESIAN),
+                                new Point(65.500, 32, Point.CARTESIAN),
                                 new Point(26.000, 28.000, Point.CARTESIAN)
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
@@ -483,7 +277,7 @@ public class RuleThemAll extends OpMode {
                         new BezierCurve(
                                 new Point(13.85, 29.9, Point.CARTESIAN),
                                 new Point(14.000, 62.000, Point.CARTESIAN),
-                                new Point(34.200, 62.000, Point.CARTESIAN)
+                                new Point(35.000, 62.000, Point.CARTESIAN)
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build());
@@ -493,7 +287,7 @@ public class RuleThemAll extends OpMode {
                 .addPath(
                         // Line 10
                         new BezierLine(
-                                new Point(42.200, 62.000, Point.CARTESIAN),
+                                new Point(35.000, 62.000, Point.CARTESIAN),
                                 new Point(13.85, 29.9, Point.CARTESIAN)
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
