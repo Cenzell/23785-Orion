@@ -1,7 +1,11 @@
 package org.firstinspires.ftc.teamcode.BirdNest.Subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.command.InstantCommand;
+import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.controller.PIDFController;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.hardware.*;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -31,11 +35,11 @@ public class MotionSubsystem {
     public static double TransHoriR = 0.15;
     public static double TransVertTarget = 0.65;
     public static double TransMiniArmDeg = 20;
-    public static double TransWrist = 0.49;
-    public static double TransMiniExtDistance = 0.3;
+    public static double TransWrist = 0.46;
+    public static double TransMiniExtDistance = 0.38;
     public static double TransVertIN = 0.65;
     public static double TransIntakeFlip = 0.38;
-    public static double TransCurrentDIstance = 3;
+    public static double TransCurrentDIstance = 3.3;
 
     // Control Components
     private Telemetry telemetry;
@@ -69,8 +73,11 @@ public class MotionSubsystem {
     double vertOffest = 0;
 
     public boolean transfer = false;
+    public boolean transfer_two = false;
     private ElapsedTime trTimer = new ElapsedTime();
 
+    GamepadEx manipulator;
+    GamepadButton intakeTrigger;
 
     public static double VertP = 0.35, VertI = 0.25, VertD = 0, VertF = 0;
 
@@ -85,12 +92,16 @@ public class MotionSubsystem {
         this.hardwareMap = hardwareMap;
         this.gamepad1 = gamepad1;
         this.gamepad2 = gamepad2;
+
+        manipulator = new GamepadEx(gamepad2);
+        intakeTrigger = new GamepadButton(manipulator, GamepadKeys.Button.LEFT_BUMPER);
     }
 
     /**
      * Initialize all hardware components and controllers
      */
     public void init() {
+
         // Initialize Servos
         HoriExtL = (ServoImplEx) hardwareMap.get(Servo.class, "HoriExtR");
         HoriExtR = (ServoImplEx) hardwareMap.get(Servo.class, "HoriExtL");
@@ -181,6 +192,50 @@ public class MotionSubsystem {
         //if (gamepad2.left_bumper) climbPrep();
         //if (gamepad2.right_bumper) climbOne();
         //if (gamepad2.right_trigger > .05) climbTwo();
+//        intakeTrigger.whileActiveOnce(new InstantCommand(() -> {
+//
+//            HoriExtL.setPosition(TransHoriL);
+//            HoriExtR.setPosition(TransHoriR);
+//            VertTarget = TransVertTarget;
+//            targetAngleDegreesMiniArm = TransMiniArmDeg;
+//            vertIN = TransVertIN;
+//            currentDistance = sensorDistance.getDistance(DistanceUnit.CM);
+//
+//            if(!transfer){
+//                clawOpen();
+//                trTimer.reset();
+//                transfer = true;
+//            }
+//
+//            if(trTimer.seconds() < 0.1){
+//                clawOpen();
+//            }
+//
+//            if (IntakeFlip.getPosition() != TransIntakeFlip) {
+//                IntakeFlip.setPosition(TransIntakeFlip);
+//            }
+//
+//            if(trTimer.seconds() > 0.21){
+//                Wrist.setPosition(TransWrist);
+//                MiniExt.setPosition(TransMiniExtDistance);
+//            }
+//
+//            if(trTimer.seconds() > 0.4){
+//                if(currentDistance < TransCurrentDIstance){
+//                    Intake.setPower(-.5);
+//                }else{
+//                    Intake.setPower(0);
+//                    closeClaw();
+//                    transfer = false;
+//                }
+//            }
+//            if(trTimer.seconds()>0.8){
+//                clawOpen();
+//                Intake.setPower(0);
+//            }
+//        }));
+
+
     }
 
     /**
@@ -242,27 +297,55 @@ public class MotionSubsystem {
     }
 
     public void transfer() {
+
         HoriExtL.setPosition(TransHoriL);
         HoriExtR.setPosition(TransHoriR);
         VertTarget = TransVertTarget;
         targetAngleDegreesMiniArm = TransMiniArmDeg;
-        Wrist.setPosition(TransWrist);
-        MiniExt.setPosition(TransMiniExtDistance);
         vertIN = TransVertIN;
+        currentDistance = sensorDistance.getDistance(DistanceUnit.CM);
+
+        if(!transfer_two){
+            trTimer.reset();
+            transfer_two = true;
+        }
+
+        if(!transfer){
+            clawOpen();
+            transfer = true;
+
+
+        if(trTimer.seconds() < 0.1){
+            clawOpen();
+        }
 
         if (IntakeFlip.getPosition() != TransIntakeFlip) {
             IntakeFlip.setPosition(TransIntakeFlip);
         }
 
-        currentDistance = sensorDistance.getDistance(DistanceUnit.CM);
-
-        if(currentDistance < TransCurrentDIstance){
-            Intake.setPower(-.5);
-        }else{
-            Intake.setPower(0);
-            closeClaw();
+        if(trTimer.seconds() > 0.21){
+            Wrist.setPosition(TransWrist);
+            MiniExt.setPosition(TransMiniExtDistance);
         }
 
+        if(trTimer.seconds() > 0.4){
+            if(currentDistance < TransCurrentDIstance){
+                Intake.setPower(-.5);
+            }else{
+                Intake.setPower(0);
+                closeClaw();
+                transfer = false;
+                transfer_two = false;
+            }
+        }
+        if(trTimer.seconds()>0.8){
+            clawOpen();
+            Intake.setPower(0);
+        }}
+        if (trTimer.seconds() > 2){
+            transfer = false;
+            transfer_two = false;
+        }
     }
 
     public void sampleScoreLow(){
@@ -348,6 +431,7 @@ public class MotionSubsystem {
      * Updates telemetry data
      */
     private void updateTelemetry() {
+        telemetry.addData("trTimer", trTimer.seconds());
         telemetry.addData("State", state);
         //telemetry.addData("Right Pos", HoriExtR.getPosition());
         //telemetry.addData("Left Pos", HoriExtL.getPosition());
