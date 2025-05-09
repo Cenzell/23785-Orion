@@ -3,41 +3,32 @@ package org.firstinspires.ftc.teamcode.BirdNest.Subsystems;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.arcrobotics.ftclib.command.OdometrySubsystem;
-import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
-import com.arcrobotics.ftclib.kinematics.HolonomicOdometry;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.pedropathing.localization.Pose;
+import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.BirdNest.lib.pedroPathing.follower.Follower;
+import com.pedropathing.follower.Follower;
+import pedroPathing.constants.*;
 
 @Config
 public class DriveSubsystem {
 
-    HardwareMap hardwareMap;
+    private HardwareMap hardwareMap;
+    private MotorEx frontLeft, frontRight, backLeft, backRight;
+    private IMU gyro;
+    private Telemetry telemetry;
+    private Gamepad gamepad1, gamepad2;
 
-    MotorEx frontLeft, frontRight, backLeft, backRight;
-    Motor.Encoder encoderLeft, encoderRight, encoderAux;
-    IMU gyro;
-
-    public static double TICKS_TO_INCHES = 8192 / ((35 / 25.4) * Math.PI);
-
-    public static double TRACKWIDTH = 5.7;
-    public static double CENTER_WHEEL_OFFSET = 4.13333;
-
-    HolonomicOdometry holomonic;
-    OdometrySubsystem odometry;
-    MecanumDrive mecanum;
-
-    Telemetry telemetry;
-    Gamepad gamepad1, gamepad2;
+    FConstants fConstants;
+    LConstants lConstants;
 
     private Follower follower;
+    private final Pose startPose = new Pose(0,0,0);
 
     public DriveSubsystem(Telemetry telemetry, HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
         this.telemetry = telemetry;
@@ -46,9 +37,12 @@ public class DriveSubsystem {
         this.gamepad2 = gamepad2;
     }
 
-    public void init(){
+    public void init() {
+        Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
+        follower.setStartingPose(startPose);
 
+        // Initialize motors
         frontLeft = new MotorEx(hardwareMap, "FrontLeft");
         frontRight = new MotorEx(hardwareMap, "FrontRight");
         backLeft = new MotorEx(hardwareMap, "BackLeft");
@@ -59,37 +53,26 @@ public class DriveSubsystem {
         backLeft.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
-        follower.startTeleopDrive();
-
-        encoderLeft = frontLeft.encoder.setDistancePerPulse(TICKS_TO_INCHES);
-        encoderRight = frontRight.encoder.setDistancePerPulse(TICKS_TO_INCHES);
-        encoderAux = backLeft.encoder.setDistancePerPulse(TICKS_TO_INCHES);
-
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-
-        gyro = hardwareMap.get(IMU.class, "imu");
-
-        IMU.Parameters parameters = new IMU.Parameters(
-                new RevHubOrientationOnRobot(
-                        RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                        RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
-        gyro.initialize(parameters);
     }
 
-    public void loop(){
-        follower.setTeleOpMovementVectors(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
+    public void start() {
+        follower.startTeleopDrive();
+    }
+
+    public void loop() {
+        // Update follower with gamepad inputs - added false parameter for field-centric drive
+        follower.setTeleOpMovementVectors(
+                gamepad1.left_stick_y,
+                gamepad1.left_stick_x,
+                -gamepad1.right_stick_x,
+                false  // Set to false for field-centric drive
+        );
         follower.update();
 
-        if(gamepad2.b ){
-            //holomonic.rotatePose(0);
-            gyro.resetYaw();
-        }
-
-        //telemetry.addLine("/// Odometry ///");
-        //telemetry.addData("Heading:", Math.toDegrees(odometry.getPose().getHeading()));
-        //telemetry.addData("x", odometry.getPose().getX());
-        //telemetry.addData("Heading (IMU):", gyro.getRobotYawPitchRollAngles().getYaw());
-        //telemetry.addData("Pose:", odometry.getPose().getX());
-        //telemetry.update();
+        // Add telemetry
+        telemetry.addData("X Position", follower.getPose().getX());
+        telemetry.addData("Y Position", follower.getPose().getY());
+        telemetry.addData("Heading", Math.toDegrees(follower.getPose().getHeading()));
     }
 }

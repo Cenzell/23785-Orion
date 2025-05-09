@@ -1,46 +1,108 @@
 package org.firstinspires.ftc.teamcode.BirdNest.Subsystems;
 
-import static java.lang.Math.round;
-
 import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.command.InstantCommand;
+import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.controller.PIDFController;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorImplEx;
-import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
-
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.qualcomm.robotcore.hardware.*;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import java.util.Locale;
 
 @Config
 public class MotionSubsystem {
 
-    public ServoImplEx HoriExtR, HoriExtL, MiniExt, Wrist, Claw, IntakeFlip;
-    public DcMotorEx VertRight, MiniArm, Intake, VertLeft;
+    // Hardware Components
+    public ServoImplEx HoriExtR;      // Right horizontal extension servo
+    public ServoImplEx HoriExtL;      // Left horizontal extension servo
+    public ServoImplEx MiniExt;       // Mini extension servo
+    public ServoImplEx Wrist;         // Wrist servo
+    public ServoImplEx Claw;          // Claw servo
+    public ServoImplEx IntakeFlip;    // Intake flip servo
+    public DistanceSensor sensorDistance; // sensor
+    public DcMotorEx VertRight;       // Right vertical extension motor
+    public DcMotorEx MiniArm;         // Mini arm motor
+    public DcMotorImpl Intake;          // Intake motor
+    public DcMotorEx VertLeft;        // Left vertical extension motor
+    public TouchSensor digitalTouch;
 
-    Telemetry telemetry;
-    HardwareMap hardwareMap;
-    Gamepad gamepad1, gamepad2;
+    public static double TransHoriL = 0.15;
+    public static double TransHoriR = 0.15;
+    public static double TransVertTarget = 0.65;
+    public static double TransMiniArmDeg = 20;
+    public static double TransWrist = 0.46;
+    public static double TransMiniExtDistance = 0.38;
+    public static double TransVertIN = 0.65;
+    public static double TransIntakeFlip = 0.38;
+    public static double TransCurrentDIstance = 3.3;
 
-    PIDFController VertExtension;
-    Double armDeg, ForwardLimit, VertLimit; //TODO see if all of this is needed.
+    // Control Components
+    private Telemetry telemetry;
+    private HardwareMap hardwareMap;
+    private Gamepad gamepad1;
+    private Gamepad gamepad2;
 
-    private double distanceTime = 2000;
-    private long startTime;
-    public int clawset = 0;
+    public double vertTicks;
+    public double vertIN;
+    public static double VertTarget = 0.75;
 
+    // Motion Control
+    public static PIDFController vertExtension;  // Vertical extension PID controller
+    public static PIDFController miniArmPID;     // Mini arm PID controller
+    public static PIDFController wristPID;
 
+    // State Variables
+    private Double armDeg;            // Current arm angle in degrees
+    private Double ForwardLimit;      // Forward movement limit
+    private Double VertLimit;         // Vertical movement limit
+    private long outTakeStartTime = 0;
+    private boolean isOutTaking = false;
+    private static final double TICKS_PER_DEGREE = 8192.0/360.0;  //encoder ticks per degree
+    public static double targetAngleDegreesMiniArm;
+    public static double wristTarget;
+    public static double MAKP = .08;
+    public static double MAKI = .002;
+    public static double MAKD = .001;
+    public static double MAKF = .0001;
+
+    double vertOffest = 0;
+
+    public boolean transfer = false;
+    public boolean transfer_two = false;
+    private ElapsedTime trTimer = new ElapsedTime();
+
+    GamepadEx manipulator;
+    GamepadButton intakeTrigger;
+
+    public static double VertP = 0.35, VertI = 0.25, VertD = 0, VertF = 0;
+
+    double currentDistance;
+
+    public String state = "";
+    /**
+     * Constructor for Motion Subsystem
+     */
     public MotionSubsystem(Telemetry telemetry, HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
         this.telemetry = telemetry;
         this.hardwareMap = hardwareMap;
         this.gamepad1 = gamepad1;
         this.gamepad2 = gamepad2;
 
+        manipulator = new GamepadEx(gamepad2);
+        intakeTrigger = new GamepadButton(manipulator, GamepadKeys.Button.LEFT_BUMPER);
     }
 
-    public void init(){
+    /**
+     * Initialize all hardware components and controllers
+     */
+    public void init() {
+
+        // Initialize Servos
         HoriExtL = (ServoImplEx) hardwareMap.get(Servo.class, "HoriExtR");
         HoriExtR = (ServoImplEx) hardwareMap.get(Servo.class, "HoriExtL");
         MiniExt = (ServoImplEx) hardwareMap.get(Servo.class, "MiniExt");
@@ -48,153 +110,376 @@ public class MotionSubsystem {
         Claw = (ServoImplEx) hardwareMap.get(Servo.class, "Claw");
         IntakeFlip = (ServoImplEx) hardwareMap.get(Servo.class, "IntakeFlip");
 
-        //TODO Put into Config
+        // Initialize Motors
         VertRight = (DcMotorEx) hardwareMap.get(DcMotor.class, "VertRight");
         MiniArm = (DcMotorEx) hardwareMap.get(DcMotor.class, "MiniArm");
-        Intake = (DcMotorEx) hardwareMap.get(DcMotor.class, "Intake");
+        Intake = (DcMotorImpl) hardwareMap.get(DcMotor.class, "Intake");
         VertLeft = (DcMotorEx) hardwareMap.get(DcMotor.class, "VertLeft");
+        sensorDistance = hardwareMap.get(DistanceSensor.class, "sensor_color_distance");
+        // Initialize Controllers
+        vertExtension = new PIDFController(VertP, VertI, VertD, VertF);
+        vertExtension.setTolerance(1);
+        miniArmPID = new PIDFController(MAKP,MAKI,MAKD,MAKF);
+        miniArmPID.setTolerance(4);
 
-        VertExtension = new PIDFController(0,0,0,0); //TODO Make not all zero
-        if (gamepad1.dpad_down) {MiniExt.setPosition(.60);} // this is to make it not hot
+        trTimer.reset();
+
+        //Wrist.setDirection(Servo.Direction.REVERSE);
+        //MiniExt.setDirection(Servo.Direction.REVERSE);
+
+        digitalTouch = hardwareMap.get(TouchSensor.class, "sensor_digital");
     }
 
-    public void loop(){
-        //if (gamepad1.dpad_up) {
-        //        HoriExtL.setPosition(1);
-        //        HoriExtR.setPosition(1);
-        //   }
-        //    if (gamepad1.dpad_down) {
-        //        HoriExtL.setPosition(0);
-        //        HoriExtR.setPosition(0);
-        //    }
+    public void start(){
+        drivePos();
+    }
 
-            if (gamepad1.dpad_up) {MiniExt.setPosition(1);}
-            if (gamepad1.dpad_down) {MiniExt.setPosition(.55);}
-
-            //if (gamepad1.a) {
-            //    IntakeFlip.setPosition(0.8);
-            //}else{
-            //    IntakeFlip.setPosition(0.1);
-            //}
-            if (gamepad1.b && clawset == 1){
-                Claw.setPosition(0.02);
-                clawset = 0;
-            }else if(gamepad1.b && clawset == 1){
-                Claw.setPosition(0.25);
-                clawset = 1;
-            }
-
-        telemetry.addData("Right Pos", HoriExtR.getPosition());
-        telemetry.addData("Left Pos", HoriExtL.getPosition());
-        telemetry.addData("MiniArm", MiniArm.getCurrentPosition());
-
-        if(gamepad2.right_trigger > .01){
-            MiniArm.setPower(gamepad2.right_trigger*gamepad2.right_trigger);
-        }else if(gamepad2.left_trigger > .01){
-            MiniArm.setPower(-(gamepad2.left_trigger*gamepad2.right_trigger));
-        }else{
-            MiniArm.setPower(0);
-        }
-
-        if(gamepad1.dpad_left){
-            Wrist.setPosition(1);
-        }else if(gamepad1.dpad_right){
-            Wrist.setPosition(0);
-        }else{
-            Wrist.setPosition(.5);
-        }
-
-
-        if(gamepad1.a){
-            intakePrep();
-        }
-        if(gamepad1.right_bumper) {
-            HoriExtL.setPosition(.0);
-            HoriExtR.setPosition(.0);
-            IntakeFlip.setPosition(0);
-            Intake.setPower(0);
-        }else if(gamepad1.right_trigger >.05){
-            HoriExtL.setPosition(.81);
-            HoriExtR.setPosition(.81);
-        }
-
-        if(gamepad1.x){
-            Intake.setPower(-1);
-        }
-
-        if(gamepad1.y){
-            transfer();
-            Intake.setPower(0);
-        }
-
+    /**
+     * Main control loop
+     */
+    public void loop() {
+        // Gamepad 1 Controls
+        handleGamepad1Controls();
+        // Gamepad 2 Controls
+        handleGamepad2Controls();
+        // set vertical angle
+        updateVert();
+        // update arm angle
+        setMiniArmAngle();
+        // update telemetry
+        updateTelemetry();
 
     }
 
+    /**
+     * Handle Gamepad 1 controls for primary functions
+     */
+    private void handleGamepad1Controls() {
+        if (gamepad1.a) intakePrep();
+        if (gamepad1.b) outTake();
+        if (gamepad1.right_bumper) drivePos();
+        if (gamepad1.right_trigger > .05) intakePos();
+        if (gamepad1.left_trigger > .05) halfIntakePos();
+        if (gamepad1.x) wallPickupPrep();
+        if (gamepad1.y) closeClaw();
+        if (gamepad1.left_bumper) clawOpen();
+        //if (gamepad1.dpad_left) climbPrep();
+        //if (gamepad1.dpad_right) climbOne();
+        if (gamepad1.options) Wrist.setPosition(wristTarget);
+    }
+
+    /**
+     * Handle Gamepad 2 controls for secondary functions
+     */
+    private void handleGamepad2Controls() {
+        if (gamepad2.x) specimenPrep();
+        if (gamepad2.y) specimenScore();
+        //if (gamepad2.b) sampleScoreHigh();
+        //if (gamepad2.a) sampleScoreLow();
+        if (gamepad2.b) targetAngleDegreesMiniArm -= 0.5;
+        if (gamepad2.a) targetAngleDegreesMiniArm += 0.5;
+        if (gamepad2.left_trigger > .05) transfer();
+        if (gamepad2.left_bumper) VertTarget += 0.1;
+        if (gamepad2.right_bumper) VertTarget -= 0.1;
+        if (gamepad2.dpad_left) Wrist.setPosition(Wrist.getPosition()+0.01);
+        if (gamepad2.dpad_right) Wrist.setPosition(Wrist.getPosition()-0.01);
+        if (gamepad2.dpad_up) IntakeFlip.setPosition(IntakeFlip.getPosition() + 0.01);
+        if (gamepad2.dpad_down) IntakeFlip.setPosition(IntakeFlip.getPosition() - 0.01);
+        if (gamepad2.back) targetAngleDegreesMiniArm -= 0.02;
+        if (gamepad2.start) targetAngleDegreesMiniArm += 0.02;
+        if (gamepad2.left_stick_button) MiniExt.setPosition(MiniExt.getPosition() - 0.01);
+        if (gamepad2.right_stick_button) MiniExt.setPosition(MiniExt.getPosition() + 0.01);
+        //if (gamepad2.left_bumper) climbPrep();
+        //if (gamepad2.right_bumper) climbOne();
+        //if (gamepad2.right_trigger > .05) climbTwo();
+//        intakeTrigger.whileActiveOnce(new InstantCommand(() -> {
+//
+//            HoriExtL.setPosition(TransHoriL);
+//            HoriExtR.setPosition(TransHoriR);
+//            VertTarget = TransVertTarget;
+//            targetAngleDegreesMiniArm = TransMiniArmDeg;
+//            vertIN = TransVertIN;
+//            currentDistance = sensorDistance.getDistance(DistanceUnit.CM);
+//
+//            if(!transfer){
+//                clawOpen();
+//                trTimer.reset();
+//                transfer = true;
+//            }
+//
+//            if(trTimer.seconds() < 0.1){
+//                clawOpen();
+//            }
+//
+//            if (IntakeFlip.getPosition() != TransIntakeFlip) {
+//                IntakeFlip.setPosition(TransIntakeFlip);
+//            }
+//
+//            if(trTimer.seconds() > 0.21){
+//                Wrist.setPosition(TransWrist);
+//                MiniExt.setPosition(TransMiniExtDistance);
+//            }
+//
+//            if(trTimer.seconds() > 0.4){
+//                if(currentDistance < TransCurrentDIstance){
+//                    Intake.setPower(-.5);
+//                }else{
+//                    Intake.setPower(0);
+//                    closeClaw();
+//                    transfer = false;
+//                }
+//            }
+//            if(trTimer.seconds()>0.8){
+//                clawOpen();
+//                Intake.setPower(0);
+//            }
+//        }));
+
+
+    }
+
+    /**
+     * State Functions
+     */
     public void intakePrep(){
-        IntakeFlip.setPosition(.8);
+        IntakeFlip.setPosition(.85);
         Intake.setPower(1);
-        telemetry.addData("State", "intakePrep");
+        clawOpen();
+        state = "Intake Position";
 
+    }
+
+    public void outTake(){
+        if (!isOutTaking) {
+            IntakeFlip.setPosition(.85);
+            outTakeStartTime = System.currentTimeMillis();
+            isOutTaking = true;
+        } else {
+            if (System.currentTimeMillis() - outTakeStartTime >= 500) {
+                Intake.setPower(-1);
+                isOutTaking = false;
+            }
+        }
+        state = "Out Taking Piece";
     }
 
     public void drivePos(){
-        HoriExtL.setPosition(0);
-        HoriExtR.setPosition(0);
-        IntakeFlip.setPosition(.25);
+        HoriExtL.setPosition(0.15);
+        HoriExtR.setPosition(0.15);
+        IntakeFlip.setPosition(.08);
         Intake.setPower(0);
-        //set wrist to position - cont servo idk how
-        telemetry.addData("State", "drivePos");
-
+        MiniExt.setPosition(.32);
+        targetAngleDegreesMiniArm = 18;
+        Wrist.setPosition(0.7);
+        VertTarget = 0.75;
+        state = "Drive Position";
     }
 
-    public void transfer(){
-        IntakeFlip.setPosition(.25);
-        MiniExt.setPosition(.01);
-        //set wrist to position - cont servo idk how
-        telemetry.addData("State", "transfering");
+    public void intakePos(){
+        HoriExtL.setPosition(.9);
+        HoriExtR.setPosition(.9);
+        state = "Full Intake Extension";
     }
 
-    public void wallPickup() {
-        MiniExt.setPosition(1);
-        //set wrist to position - cont servo idk how
-        //set mini arm angle
-        telemetry.addData("State", "wallPickup");
+    public void halfIntakePos(){
+        HoriExtL.setPosition(.5);
+        HoriExtR.setPosition(.5);
+        state = "Half Intake Extension";
     }
 
-    public void sampleScore(){
-        telemetry.addData("State", "scoreSample");
+    public void wallPickupPrep(){
+        clawOpen();
+        setVertTarget(0.5);
+        MiniExt.setPosition(.66);
+        targetAngleDegreesMiniArm = 12;
+        Wrist.setPosition(0.62);
+        state = "Wall Pickup Prep";
     }
 
-    public void specimenPrep(){
-        telemetry.addData("State", "SpecimenPrep");
-    }
+    public void transfer() {
 
-    public void specimenScore(){
-        telemetry.addData("State", "scoreSpecimen");
-    }
+        HoriExtL.setPosition(TransHoriL);
+        HoriExtR.setPosition(TransHoriR);
+        VertTarget = TransVertTarget;
+        targetAngleDegreesMiniArm = TransMiniArmDeg;
+        vertIN = TransVertIN;
+        currentDistance = sensorDistance.getDistance(DistanceUnit.CM);
 
-    public void Limits(){
-        //TODO: Find good limits and enable
-        if(armDeg > 999){
-            armDeg = 45.0;
-        } else if (armDeg < -100){
-            armDeg = 45.0;
+        if(!transfer_two){
+            trTimer.reset();
+            transfer_two = true;
+        }
+
+        if(!transfer){
+            clawOpen();
+            transfer = true;
+
+
+        if(trTimer.seconds() < 0.1){
+            clawOpen();
+        }
+
+        if (IntakeFlip.getPosition() != TransIntakeFlip) {
+            IntakeFlip.setPosition(TransIntakeFlip);
+        }
+
+        if(trTimer.seconds() > 0.21){
+            Wrist.setPosition(TransWrist);
+            MiniExt.setPosition(TransMiniExtDistance);
+        }
+
+        if(trTimer.seconds() > 0.4){
+            if(currentDistance < TransCurrentDIstance){
+                Intake.setPower(-.5);
+            }else{
+                Intake.setPower(0);
+                closeClaw();
+                transfer = false;
+                transfer_two = false;
+            }
+        }
+        if(trTimer.seconds()>0.8){
+            clawOpen();
+            Intake.setPower(0);
+        }}
+        if (trTimer.seconds() > 2){
+            transfer = false;
+            transfer_two = false;
         }
     }
 
-    public void ExtendIntake(){
-        HoriExtR.setPosition(1);
-        HoriExtL.setPosition(1);
+    public void sampleScoreLow(){
+        MiniExt.setPosition(.9);
+        targetAngleDegreesMiniArm = 105;
+        Wrist.setPosition(0.92);
+        VertTarget = 3.5;
+        state = "Score Sample Low";
     }
 
-    public void RetractIntake(){
-        HoriExtR.setPosition(0);
-        HoriExtL.setPosition(0);
+    public void setVertTarget(double target){
+        VertTarget = target;
     }
 
-    public void handOff(){
-        HoriExtR.setPosition(0);
-        HoriExtL.setPosition(0);
+    public void sampleScoreHigh(){
+        targetAngleDegreesMiniArm = 105;
+        Wrist.setPosition(0.92);
+        VertTarget = 15;
+        MiniExt.setPosition(9);
+        state = "Score Sample High";
     }
 
+    public void specimenPrep(){
+        VertTarget = 0.15;
+        closeClaw();
+        targetAngleDegreesMiniArm = 98;
+        Wrist.setPosition(1);
+        MiniExt.setPosition(.3);
+        state = "Specimen Prep";
+    }
+
+    public void specimenScore(){
+        if (vertIN > 5.1){
+            clawOpen();
+            Wrist.setPosition(.5);
+            drivePos();
+            state = "Score Specimen Release";
+        } else {
+            VertTarget = 5.75;
+            state = "Score Specimen Up";
+        }
+    }
+
+    public void climbPrep(){
+        VertTarget = 12;
+        targetAngleDegreesMiniArm=60;
+        state = "Climb Prep";
+    }
+
+    public void climbOne(){
+        VertTarget = 0;
+        //drivePos();
+        //Todo set vertical extension
+        //TODO set smth with miniArm position
+        state = "Stage One Climb";
+    }
+
+    public void climbTwo(){
+        //Todo set vertical extension
+        state = "Stage Two Climb";
+    }
+
+    /**
+     * Control Code
+     *
+     */
+    private void extendArm(double x){
+        VertLeft.setPower(-x);
+        VertRight.setPower(x);
+    }
+
+    public void closeClaw(){
+        Claw.setPosition(.43);
+        state = "Claw Closed";
+    }
+
+    public void clawOpen(){
+        Claw.setPosition(0.23);
+        state = "Claw Open";
+    }
+
+    /**
+     * Updates telemetry data
+     */
+    private void updateTelemetry() {
+        telemetry.addData("trTimer", trTimer.seconds());
+        telemetry.addData("State", state);
+        //telemetry.addData("Right Pos", HoriExtR.getPosition());
+        //telemetry.addData("Left Pos", HoriExtL.getPosition());
+        telemetry.addData("MiniArm", MiniArm.getCurrentPosition() / TICKS_PER_DEGREE);
+        telemetry.addData("VertExtL", VertLeft.getCurrentPosition());
+        telemetry.addData("VertExtR", VertRight.getCurrentPosition());
+        telemetry.addData("miniTarget", targetAngleDegreesMiniArm);
+        telemetry.addData("VertTarget", VertTarget);
+        telemetry.addData("WristTarget", wristTarget);
+        telemetry.addData("WristPos", Wrist.getPosition());
+        telemetry.addData("MiniExt Target", MiniExt.getPosition());
+        telemetry.addData("MiniArm Error", miniArmPID.getPositionError());
+        telemetry.addData("IntakeFlip", IntakeFlip.getPosition());
+        telemetry.addData("vert error", vertExtension.getPositionError());
+
+        telemetry.addData("Vert check",vertExtension.atSetPoint());
+        telemetry.addData("MiniArm check", miniArmPID.atSetPoint());
+
+        telemetry.addData("VertIn", vertIN);
+        telemetry.addData("Distance (CM)",
+                String.format(Locale.US, "%.02f", sensorDistance.getDistance(DistanceUnit.CM)));
+        telemetry.addData("Claw Pos:", Claw.getPosition());
+        telemetry.addData("Distance", currentDistance);
+    }
+
+    /**
+     * PID Control code
+     */
+    public void updateVert(){
+
+//        if (digitalTouch.isPressed()) {
+//            vertOffest += vertIN; //TODO fix this shit... always sets the thing to zero prolly cus i set it as a digiital device and not a rev touch sensor but to dumb to fix
+//        }
+
+
+        vertTicks = (VertLeft.getCurrentPosition() + -VertRight.getCurrentPosition())/2.0;
+        vertIN = vertTicks / 450 - vertOffest;
+
+        double output = vertExtension.calculate(vertIN, VertTarget);
+        extendArm(output);
+    }
+
+    public void setMiniArmAngle() {
+
+
+        double currentPosition = (MiniArm.getCurrentPosition() / TICKS_PER_DEGREE) - vertOffest;
+        double pidOutput = miniArmPID.calculate(currentPosition, targetAngleDegreesMiniArm);
+
+        MiniArm.setPower(-pidOutput);
+    }
 }
